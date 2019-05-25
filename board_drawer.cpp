@@ -11,26 +11,28 @@
 
 BoardDrawer::BoardDrawer() : brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl")
 {
-    std::vector<float> brdVertices = {
+    std::vector<int> brdVertices = {
         // Position             // Texture
-        1.0f, 1.0f, 0.0f,       1.0f, 1.0f,
-        1.0f, -1.0f, 0.0f,      1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f,     0.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f,       0.0f, 1.0f};
+        0, 0, 0,       0, 1,
+        1035, 0, 0,       1, 1,
+        1035, 899, 0,      1, 0,
+        0, 899, 0,     0, 0};
     
     std::vector<unsigned int> brdIndices = {
         0, 1, 3,
         1, 2, 3};  
 
+    brdShader.setInt("totalWidth", 1035);
+    brdShader.setInt("totalHeight", 899);
     glGenVertexArrays(1, &brdArray);
     glBindVertexArray(brdArray);
 
     unsigned int brdBuffer = 0;
     glGenBuffers(1, &brdBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, brdBuffer);
-    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(float), &brdVertices[0], GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(int), &brdVertices[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(int), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(int), (void*)(3 * sizeof(int)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     
