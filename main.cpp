@@ -10,12 +10,18 @@ GLFWwindow* initialize_window(unsigned int height, unsigned int width);
 
 int main()
 {
-    GLFWwindow* window = initialize_window(600, 800);
-    BoardDrawer drawer{};
+    GLFWwindow* window = initialize_window(899, 1035);
 
     while (!glfwWindowShouldClose(window)) {
+        BoardDrawer drawer{};
         processInput(window);
         drawer.drawBoard();
+        for (int i = 0; i < 20; ++i) {
+            drawer.drawBlock(i, 0);
+        }
+        for (int i = 0; i < 10; ++i) {
+            drawer.drawBlock(0, i);
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
