@@ -14,7 +14,7 @@ void main() {
     gl_Position = vec4(
         2.0 * (aPos.x - centerX) / totalWidth, 
         -2.0 * (aPos.y - centerY) / totalHeight, 
-        1.0 * aPos.z, 
+        aPos.z, 
         1.0);
-    TexCoord = 1.0 * aTexCoord;
+    TexCoord = aTexCoord;
 };
