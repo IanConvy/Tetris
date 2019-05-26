@@ -4,27 +4,45 @@
 #include "GLFW/glfw3.h"
 #include "headers/board_drawer.hpp"
 
+#include <iostream>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 GLFWwindow* initialize_window(unsigned int height, unsigned int width); 
 
 int main()
 {
-    GLFWwindow* window = initialize_window(899, 1035);
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    while (!glfwWindowShouldClose(window)) {
+    { // OpenGL scope
+        GLFWwindow* window = initialize_window(899, 1035);
+
+        double prev_time = 0;
         BoardDrawer drawer{};
-        processInput(window);
-        drawer.drawBoard();
-        for (int i = 0; i < 20; ++i) {
-            drawer.drawBlock(i, 0);
+        double frameSecs = 1 / 60.1;
+        while (!glfwWindowShouldClose(window)) {
+            double new_time = glfwGetTime();
+            double timeDiff = new_time - prev_time;
+            if (timeDiff >= frameSecs) {
+                std::cout << 1 / timeDiff << std::endl;
+                processInput(window);
+                drawer.drawBoard();
+                for (int i = 0; i < 20; ++i) {
+                    drawer.drawBlock(i, 0);
+                }
+                for (int i = 0; i < 10; ++i) {
+                    drawer.drawBlock(0, i);
+                }
+                glfwSwapBuffers(window);
+                glfwPollEvents();
+                prev_time = new_time;
+            }
         }
-        for (int i = 0; i < 10; ++i) {
-            drawer.drawBlock(0, i);
-        }
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+    }    
     glfwTerminate();
     return 0;
 }
@@ -43,12 +61,6 @@ void processInput(GLFWwindow* window)
 
 GLFWwindow* initialize_window(unsigned int height, unsigned int width)
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
     GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL", nullptr, nullptr);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwMakeContextCurrent(window);
