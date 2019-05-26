@@ -3,8 +3,10 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "headers/board_drawer.hpp"
+#include "headers/inputs.hpp"
 
 #include <iostream>
+#include<vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -21,15 +23,18 @@ int main()
     { // OpenGL scope
         GLFWwindow* window = initialize_window(899, 1035);
 
-        double prev_time = 0;
         BoardDrawer drawer{};
+        InputHandler inputs{window};
+
+        double prev_time = 0;
         double frameSecs = 1 / 60.1;
         while (!glfwWindowShouldClose(window)) {
             double new_time = glfwGetTime();
             double timeDiff = new_time - prev_time;
             if (timeDiff >= frameSecs) {
-                std::cout << 1 / timeDiff << std::endl;
-                processInput(window);
+                // std::cout << 1 / timeDiff << std::endl;
+                std::vector<bool> keyPress = inputs.getKeyPress();
+                std::cout << keyPress[4] << std::endl;
                 drawer.drawBoard();
                 for (int i = 0; i < 20; ++i) {
                     drawer.drawBlock(i, 0);
