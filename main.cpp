@@ -26,7 +26,7 @@ int main()
 
         BoardDrawer drawer{};
         InputHandler inputs{window};
-        Piece piece{sqPiece};
+        Piece piece{lrPiece};
         piece.setPosition(5, 5, 0);
 
         double prev_time = 0;
@@ -38,7 +38,16 @@ int main()
                 // std::cout << 1 / timeDiff << std::endl;
                 std::vector<bool> keyPress = inputs.getKeyPress();
                 if (keyPress[3]) {
+                    piece.rotate(-1);
+                }
+                if (keyPress[4]) {
                     piece.rotate(1);
+                }
+                if (keyPress[0]) {
+                    piece.translate(0, -1);
+                }
+                if (keyPress[1]) {
+                    piece.translate(0, 1);
                 }
                 drawer.drawBoard();
                 for (int i = 0; i < 4; ++i) {

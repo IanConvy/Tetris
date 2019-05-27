@@ -25,6 +25,7 @@ struct Piece
     Piece(const PieceData& data);
     void setPosition(int centerRow, int centerCol, unsigned int orient);
     void rotate(int turns);
+    void translate(int dRow, int dCol);
 };
 
 extern const PieceData lrPiece;

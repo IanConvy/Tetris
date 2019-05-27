@@ -30,6 +30,7 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
     centerCol = newCenterCol;
     orient = newOrient;
     assert(orient < data.numOrients);
+    assert(data.rowOffsets.size() == data.colOffsets.size());
     for (int i = 0; i < data.rowOffsets[orient].size(); ++i) {
         rows[i] = centerRow + data.rowOffsets[orient][i];
         cols[i] = centerCol + data.colOffsets[orient][i];
@@ -38,9 +39,16 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
 
 void Piece::rotate(int turns)
 {
-    orient = (data.numOrients + (orient + turns) % data.numOrients) % data.numOrients;
-    assert(orient >= 0 && orient < data.numOrients);
-    setPosition(centerRow, centerCol, orient);
+    int newOrient = (data.numOrients + (orient + turns) % data.numOrients) % data.numOrients;
+    assert(newOrient >= 0 && newOrient < data.numOrients);
+    setPosition(centerRow, centerCol, newOrient);
+}
+
+void Piece::translate(int dRow, int dCol)
+{
+    int newCenterRow = centerRow + dRow;
+    int newCenterCol = centerCol + dCol;
+    setPosition(newCenterRow, newCenterCol, orient);
 }
 
 const PieceData lrPiece{
