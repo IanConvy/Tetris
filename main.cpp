@@ -26,21 +26,24 @@ int main()
 
         BoardDrawer drawer{};
         InputHandler inputs{window};
-        Piece piece{lrPiece};
+        Piece piece{sqPiece};
         piece.setPosition(5, 5, 0);
 
         double prev_time = 0;
-        double frameSecs = 1 / 60.1;
+        double frameSecs = 1 / 1.5;
         while (!glfwWindowShouldClose(window)) {
             double new_time = glfwGetTime();
             double timeDiff = new_time - prev_time;
             if (timeDiff >= frameSecs) {
                 // std::cout << 1 / timeDiff << std::endl;
                 std::vector<bool> keyPress = inputs.getKeyPress();
-                // std::cout << keyPress[4] << std::endl;
+                if (keyPress[3]) {
+                    piece.rotate(1);
+                }
                 drawer.drawBoard();
                 for (int i = 0; i < 4; ++i) {
                     drawer.drawBlock(piece.rows[i], piece.cols[i]);
+                    std::cout << piece.rows[i] << " " << piece.cols[i] << std::endl;
                 }
                 glfwSwapBuffers(window);
                 glfwPollEvents();

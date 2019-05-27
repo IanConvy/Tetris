@@ -19,11 +19,12 @@ struct PieceData
 struct Piece
 {
     const PieceData& data;
-    int orient;
+    int centerRow, centerCol, orient;
     std::vector<int> rows, cols;
 
     Piece(const PieceData& data);
     void setPosition(int centerRow, int centerCol, unsigned int orient);
+    void rotate(int turns);
 };
 
 extern const PieceData lrPiece;
