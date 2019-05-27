@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 #include "headers/board_drawer.hpp"
 #include "headers/inputs.hpp"
+#include "headers/pieces.hpp"
 
 #include <iostream>
 #include<vector>
@@ -25,6 +26,8 @@ int main()
 
         BoardDrawer drawer{};
         InputHandler inputs{window};
+        Piece piece{lrPiece};
+        piece.setPosition(5, 5, 0);
 
         double prev_time = 0;
         double frameSecs = 1 / 60.1;
@@ -34,13 +37,10 @@ int main()
             if (timeDiff >= frameSecs) {
                 // std::cout << 1 / timeDiff << std::endl;
                 std::vector<bool> keyPress = inputs.getKeyPress();
-                std::cout << keyPress[4] << std::endl;
+                // std::cout << keyPress[4] << std::endl;
                 drawer.drawBoard();
-                for (int i = 0; i < 20; ++i) {
-                    drawer.drawBlock(i, 0);
-                }
-                for (int i = 0; i < 10; ++i) {
-                    drawer.drawBlock(0, i);
+                for (int i = 0; i < 4; ++i) {
+                    drawer.drawBlock(piece.rows[i], piece.cols[i]);
                 }
                 glfwSwapBuffers(window);
                 glfwPollEvents();

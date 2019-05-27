@@ -1,4 +1,6 @@
 #define GLEW_STATIC
+#ifndef INPUTS
+#define INPUTS
 
 #include<vector>
 
@@ -15,3 +17,4 @@ struct InputHandler
     static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
     std::vector<bool> getKeyPress();
 };
+#endif
