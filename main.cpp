@@ -5,6 +5,7 @@
 #include "headers/board_drawer.hpp"
 #include "headers/inputs.hpp"
 #include "headers/pieces.hpp"
+#include "headers/nes.hpp"
 
 #include <iostream>
 #include<vector>
@@ -20,44 +21,33 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwSwapInterval(1);
 
     { // OpenGL scope
         GLFWwindow* window = initialize_window(899, 1035);
 
         BoardDrawer drawer{};
-        InputHandler inputs{window};
-        Piece piece{lrPiece};
-        piece.setPosition(5, 5, 0);
+        NESTetris game{};
+        InputHandler inputs{window, game.commands};
 
         double prev_time = 0;
-        double frameSecs = 1 / 1.5;
+        double frameSecs = 1 / 60.1;
         while (!glfwWindowShouldClose(window)) {
             double new_time = glfwGetTime();
             double timeDiff = new_time - prev_time;
             if (timeDiff >= frameSecs) {
                 // std::cout << 1 / timeDiff << std::endl;
-                std::vector<bool> keyPress = inputs.getKeyPress();
-                if (keyPress[3]) {
-                    piece.rotate(-1);
-                }
-                if (keyPress[4]) {
-                    piece.rotate(1);
-                }
-                if (keyPress[0]) {
-                    piece.translate(0, -1);
-                }
-                if (keyPress[1]) {
-                    piece.translate(0, 1);
-                }
+                game.runFrame();
+                auto rows = game.getBlocksRows();
+                auto cols = game.getBlocksCols();
                 drawer.drawBoard();
                 for (int i = 0; i < 4; ++i) {
-                    drawer.drawBlock(piece.rows[i], piece.cols[i]);
-                    std::cout << piece.rows[i] << " " << piece.cols[i] << std::endl;
+                    drawer.drawBlock(rows[i], cols[i]);
                 }
                 glfwSwapBuffers(window);
-                glfwPollEvents();
                 prev_time = new_time;
             }
+            glfwPollEvents();
         }
     }    
     glfwTerminate();
