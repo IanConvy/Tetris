@@ -2,17 +2,15 @@
 
 #include <vector>
 #include <cassert>
-#include <iostream>
+#include <utility>
 
 PieceData::PieceData(
     const unsigned int pieceIndex,
     const int numOrients,
-    std::vector<std::vector<int>> rowOffsets, 
-    std::vector<std::vector<int>> colOffsets) : 
+    std::vector<std::vector<std::pair<int, int>>> coordOffsets) : 
 index{pieceIndex},
 numOrients{numOrients},
-rowOffsets{rowOffsets},
-colOffsets{colOffsets}
+coordOffsets{coordOffsets}
 {}
 
 Piece::Piece(const PieceData& data) :
@@ -20,8 +18,7 @@ data{data},
 centerRow{0},
 centerCol{0},
 orient{0},
-rows{0, 0, 0, 0},
-cols{0, 0, 0, 0}
+coords{{0, 0}, {0, 0}, {0, 0}, {0, 0}}
 {}
 
 void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrient)
@@ -30,10 +27,10 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
     centerCol = newCenterCol;
     orient = newOrient;
     assert(orient < data.numOrients);
-    assert(data.rowOffsets.size() == data.colOffsets.size());
-    for (int i = 0; i < data.rowOffsets[orient].size(); ++i) {
-        rows[i] = centerRow + data.rowOffsets[orient][i];
-        cols[i] = centerCol + data.colOffsets[orient][i];
+    assert(data.coordOffsets[orient].size() == coords.size());
+    for (int i = 0; i < data.coordOffsets[orient].size(); ++i) {
+        coords[i].first = centerRow + data.coordOffsets[orient][i].first;
+        coords[i].second = centerCol + data.coordOffsets[orient][i].second;
     }
 }
 
@@ -54,86 +51,60 @@ void Piece::translate(int dRow, int dCol)
 const PieceData lrPiece{
     0, // Index
     4, // Number of orientations
-    // Row offsets from center
-    {{0, 0, 0, -1},
-    {0, -1, 1, 1},
-    {0, 0, 0, 1},
-    {0, 1, -1, -1}},
-    // Column offsets from center
-    {{0, 1, -1, -1},
-    {0, 0, 0, -1},
-    {0, -1, 1, 1},
-    {0, 0, 0, 1}}
+    // Offsets from center
+    {{{0, 0}, {0, 1}, {0, -1}, {-1, -1}},
+    {{0, 0}, {-1, 0}, {1, 0}, {1, -1}},
+    {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
+    {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}}}
 };
 
 const PieceData llPiece{
     1, // Index
     4, // Number of orientations
-    // Row offsets from center
-    {{0, 0, 0, -1},
-    {0, 1, -1, -1},
-    {0, 0, 0, 1},
-    {0, -1, 1, 1}},
-    // Column offsets from center
-    {{0, -1, 1, 1},
-    {0, 0, 0, -1},
-    {0, 1, -1, -1},
-    {0, 0, 0, 1}}         
+    // Offsets from center
+    {{{0, 0}, {0, -1}, {0, 1}, {-1, 1}},
+    {{0, 0}, {1, 0}, {-1, 0}, {-1, -1}},
+    {{0, 0}, {0, 1}, {0, -1}, {1, -1}},
+    {{0, 0}, {-1, 0}, {1, 0}, {1, 1}}}         
 };
 
 const PieceData srPiece{
     2, // Index
     2, // Number of orientations
-    // Row offsets from center
-    {{0, 0, -1, -1},
-    {0, 1, 0, -1}},
-    // Column offsets from center
-    {{0, 1, -1, 0},
-    {0, 0, 1, 1}}
+    // Offsets from center
+    {{{0, 0}, {0, 1}, {-1, -1}, {-1, 0}},
+    {{0, 0}, {1, 0}, {0, 1}, {-1, 1}}}
 };
 
 const PieceData slPiece{
     3, // Index
     2, // Number of orientations
-    // Row offsets from center
-    {{0, 0, -1, -1},
-    {0, -1, 0, 1}},
-    // Column offsets from center
-    {{0, -1, 0, 1},
-    {0, 0, 1, 1}}
+    // Offsets from center
+    {{{0, 0}, {0, -1}, {-1, 0}, {-1, 1}},
+    {{0, 0}, {-1, 0}, {0, 1}, {1, 1}}}
 };
 
 const PieceData iPiece{
     4, // Index
     2, // Number of orientations
     // Row offsets from center
-    {{0, 0, 0, 0},
-    {0, 2, 1, -1}},
-    // Column offsets from center
-    {{0, -2, -1, 1},
-    {0, 0, 0, 0}}
+    {{{0, 0}, {0, -2}, {0, -1}, {0, 1}},
+    {{0, 0}, {2, 0}, {1, 0}, {-1, 0}}}
 };
 
 const PieceData tPiece{
     5, // Index
     4, // Number of orientations
-    // Row offsets from center
-    {{0, -1, 0, 0},
-    {0, 0, -1, 1},
-    {0, 1, 0, 0},
-    {0, 0, 1, -1}},
-    // Column offsets from center
-    {{0, 0, 1, -1},
-    {0, -1, 0, 0},
-    {0, 0, -1, 1},
-    {0, 1, 0, 0}}
+    // Offsets from center
+    {{{0, 0}, {-1, 0}, {0, 1}, {0, -1}},
+    {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
+    {{0, 0}, {1, 0}, {0, -1}, {0, 1}},
+    {{0, 0}, {0, 1}, {1, 0}, {-1, 0}}}
 };
 
 const PieceData sqPiece{
     6, // Index
     1, // Number of orientations
-    // Row offsets from center
-    {{0, -1, -1, 0}},
-    // Column offsets from center
-    {{0, 0, -1, -1}}
+    // Offsets from center
+    {{{0, 0}, {-1, 0}, {-1, -1}, {0, -1}}}
 };

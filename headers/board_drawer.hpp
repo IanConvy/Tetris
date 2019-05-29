@@ -4,6 +4,7 @@
 
 #include "shader_s.hpp"
 #include <vector>
+#include <utility>
 
 struct BoardDrawer
 {
@@ -20,6 +21,7 @@ struct BoardDrawer
     ~BoardDrawer();
     void drawBoard();
     void drawBlock(const int row, const int col);
+    void drawBlocks(const std::vector<std::pair<int, int>> blocks);
 };
 
 void createTexture(unsigned int& texID, std::string filePath);

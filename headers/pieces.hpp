@@ -1,18 +1,18 @@
 #ifndef PIECES
 #define PIECES
 #include <vector>
+#include <utility>
 
 struct PieceData
 {
     const unsigned int index;
     const int numOrients;
-    std::vector<std::vector<int>> rowOffsets, colOffsets;
+    std::vector<std::vector<std::pair<int, int>>> coordOffsets;
 
     PieceData(
         const unsigned int index,
         const int numOrients,
-        std::vector<std::vector<int>> rowOffsets, 
-        std::vector<std::vector<int>> colOffsets
+        std::vector<std::vector<std::pair<int, int>>> coordOffsets
     );
 };
 
@@ -20,7 +20,7 @@ struct Piece
 {
     const PieceData& data;
     int centerRow, centerCol, orient;
-    std::vector<int> rows, cols;
+    std::vector<std::pair<int, int>> coords;
 
     Piece(const PieceData& data);
     void setPosition(int centerRow, int centerCol, unsigned int orient);

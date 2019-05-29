@@ -7,9 +7,6 @@
 #include "headers/pieces.hpp"
 #include "headers/nes.hpp"
 
-#include <iostream>
-#include<vector>
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 GLFWwindow* initialize_window(unsigned int height, unsigned int width); 
@@ -38,12 +35,9 @@ int main()
             if (timeDiff >= frameSecs) {
                 // std::cout << 1 / timeDiff << std::endl;
                 game.runFrame();
-                auto rows = game.getBlocksRows();
-                auto cols = game.getBlocksCols();
+                auto blockCoords = game.getBlockCoords();
                 drawer.drawBoard();
-                for (int i = 0; i < 4; ++i) {
-                    drawer.drawBlock(rows[i], cols[i]);
-                }
+                drawer.drawBlocks(blockCoords);
                 glfwSwapBuffers(window);
                 prev_time = new_time;
             }

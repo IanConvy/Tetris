@@ -67,6 +67,12 @@ void BoardDrawer::drawBoard()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
+void BoardDrawer::drawBlocks(const std::vector<std::pair<int, int>> blocks) {
+    for (auto& rowCol : blocks) {
+        drawBlock(rowCol.first, rowCol.second);
+    }
+}
+
 void BoardDrawer::drawBlock(const int row, const int col)
 {
     const int x0 = playFieldPos[0] + col*blockWidthSpacing;

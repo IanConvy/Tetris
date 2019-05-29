@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 NESTetris::NESTetris() :
 commands{
@@ -16,8 +17,7 @@ commands{
     {"rightDAS", false},
     {"clearDAS", false}},
 currPiece{lrPiece},
-droppedBlocksRows(4, 0),
-droppedBlocksCols(4, 0)
+droppedBlockCoords(4, {0, 0})
 {
     currPiece.setPosition(5, 5, 0);
 };
@@ -37,20 +37,14 @@ void NESTetris::runFrame()
         currPiece.translate(0, 1);
     }
     for (int i = 0; i < 4; ++i) {
-        droppedBlocksRows[i] = currPiece.rows[i]; 
-        droppedBlocksCols[i] = currPiece.cols[i];
+        droppedBlockCoords[i] = currPiece.coords[i]; 
     }
     resetBool(commands);
 }
 
-const std::vector<int>& NESTetris::getBlocksRows()
+const std::vector<std::pair<int, int>>& NESTetris::getBlockCoords()
 {
-    return droppedBlocksRows;
-}
-
-const std::vector<int>& NESTetris::getBlocksCols()
-{
-    return droppedBlocksCols;
+    return droppedBlockCoords;
 }
 
 void resetBool(std::map<const std::string, bool>& bools)
