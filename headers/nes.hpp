@@ -11,6 +11,7 @@
 struct NESTetris
 {
     std::map<const std::string, bool> commands;
+    std::map<const std::string, int> constants, dynamic;
     std::vector<std::vector<int>> droppedBlockCoords;
     Piece currPiece;
     Grid grid;

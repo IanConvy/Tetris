@@ -36,6 +36,7 @@ int main()
             double timeDiff = new_time - prev_time;
             if (timeDiff >= frameSecs) {
                 // std::cout << 1 / timeDiff << std::endl;
+                inputs.setCommands();
                 game.runFrame();
                 auto blockCoords = game.getBlockCoords();
                 drawer.drawBoard();

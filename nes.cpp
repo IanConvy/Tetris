@@ -16,11 +16,18 @@ commands{
     {"leftDAS", false},
     {"rightDAS", false},
     {"clearDAS", false}},
+constants{
+    {"setGravity", 20},
+    {"dropGravity", 2}},
+dynamic{
+    {"dropFrames", 0},
+    {"gravity", 0}},
 currPiece{lrPiece},
 droppedBlockCoords(4, {0, 0, 0}),
 grid{20, 10}
 {
     currPiece.setPosition(5, 5, 0);
+    dynamic["gravity"] = constants["setGravity"];
 };
 
 void NESTetris::runFrame()
@@ -48,6 +55,23 @@ void NESTetris::runFrame()
         if (grid.collisionCheck(currPiece.coords)) {
             currPiece.translate(0, -1);
         }
+    }
+    if (commands["softDrop"]) {
+        dynamic["gravity"] = constants["dropGravity"];
+    }
+    else {
+        dynamic["gravity"] = constants["setGravity"];
+    }
+
+    if (dynamic["dropFrames"] >= dynamic["gravity"]) {
+        dynamic["dropFrames"] = 0;
+        currPiece.translate(-1, 0);
+        if (grid.collisionCheck(currPiece.coords)) {
+            currPiece.setPosition(19, 5, 0);
+        }
+    }    
+    else {
+        dynamic["dropFrames"] += 1;
     }
     for (int i = 0; i < 4; ++i) {
         droppedBlockCoords[i][0] = currPiece.coords[i].first;
