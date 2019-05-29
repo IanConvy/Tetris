@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <utility>
 
 NESTetris::NESTetris() :
 commands{
@@ -18,7 +17,7 @@ commands{
     {"rightDAS", false},
     {"clearDAS", false}},
 currPiece{lrPiece},
-droppedBlockCoords(4, {0, 0}),
+droppedBlockCoords(4, {0, 0, 0}),
 grid{20, 10}
 {
     currPiece.setPosition(5, 5, 0);
@@ -51,12 +50,14 @@ void NESTetris::runFrame()
         }
     }
     for (int i = 0; i < 4; ++i) {
-        droppedBlockCoords[i] = currPiece.coords[i]; 
+        droppedBlockCoords[i][0] = currPiece.coords[i].first;
+        droppedBlockCoords[i][1] = currPiece.coords[i].second;
+        droppedBlockCoords[i][2] = currPiece.data.index;
     }
     resetBool(commands);
 }
 
-const std::vector<std::pair<int, int>>& NESTetris::getBlockCoords()
+const std::vector<std::vector<int>>& NESTetris::getBlockCoords()
 {
     return droppedBlockCoords;
 }

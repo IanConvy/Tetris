@@ -9,19 +9,21 @@
 struct BoardDrawer
 {
     unsigned int sqrArray; 
-    unsigned int brdTexture, blockTexture;
+    unsigned int brdTexture;
     unsigned int sqrBuffer, sqrIndexBuffer;
     float gridHeight, gridWidth;
     std::vector<int> brdVertices;
     std::vector<int> playFieldPos;
+    std::vector<unsigned int> blockTextures;
+    std::vector<unsigned int> pieceTexMap;
     float blockWidthSpacing, blockHeightSpacing; // Requires playFieldPos for initialization 
     Shader brdShader;
     
     BoardDrawer();
     ~BoardDrawer();
     void drawBoard();
-    void drawBlock(const int row, const int col);
-    void drawBlocks(const std::vector<std::pair<int, int>> blocks);
+    void drawBlock(const int row, const int col, const unsigned index);
+    void drawBlocks(const std::vector<std::vector<int>> blocks);
 };
 
 void createTexture(unsigned int& texID, std::string filePath);

@@ -22,6 +22,8 @@ playFieldPos{
     390, 805,   710, 805}, 
 gridHeight{20},
 gridWidth{10},   
+blockTextures(3, 0),
+pieceTexMap{0, 1, 1, 0, 2, 2, 2},
 blockWidthSpacing{(playFieldPos[2] - playFieldPos[0])/gridWidth},
 blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
 {    
@@ -45,14 +47,15 @@ blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sqrIndices.size() * sizeof(unsigned int), &sqrIndices[0], GL_STATIC_DRAW);
     
     createTexture(brdTexture, "images/tetrisboard.png");
-    createTexture(blockTexture, "images/redblock.png");
-
+    createTexture(blockTextures[0], "images/yellowblock.png");
+    createTexture(blockTextures[1], "images/redblock.png");
+    createTexture(blockTextures[2], "images/whiteblock.png");
 }
 
 BoardDrawer::~BoardDrawer()
 {
     glDeleteTextures(1, &brdTexture);
-    glDeleteTextures(1, &blockTexture);
+    glDeleteTextures(blockTextures.size(), &blockTextures[0]);
     glDeleteBuffers(1, &sqrBuffer);
     glDeleteBuffers(1, &sqrIndexBuffer);
     glDeleteVertexArrays(1, &sqrArray);
@@ -67,13 +70,13 @@ void BoardDrawer::drawBoard()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void BoardDrawer::drawBlocks(const std::vector<std::pair<int, int>> blocks) {
-    for (auto& rowCol : blocks) {
-        drawBlock(rowCol.first, rowCol.second);
+void BoardDrawer::drawBlocks(const std::vector<std::vector<int>> blocks) {
+    for (auto& rowColIndex : blocks) {
+        drawBlock(rowColIndex[0], rowColIndex[1], rowColIndex[2]);
     }
 }
 
-void BoardDrawer::drawBlock(const int row, const int col)
+void BoardDrawer::drawBlock(const int row, const int col, const unsigned int index)
 {
     const int x0 = playFieldPos[0] + col*blockWidthSpacing;
     const int x1 = playFieldPos[0] + (col + 1)*blockWidthSpacing;
@@ -85,7 +88,9 @@ void BoardDrawer::drawBlock(const int row, const int col)
         x1, y1, 0,      1, 1,
         x0, y0, 0,      0, 0,
         x1, y0, 0,      1, 0};
-    glBindTexture(GL_TEXTURE_2D, blockTexture);
+        
+    unsigned int texture = blockTextures[pieceTexMap[index]];
+    glBindTexture(GL_TEXTURE_2D, texture);
     brdShader.use();
     glBindVertexArray(sqrArray);
     glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(int), &blockVertices[0], GL_STATIC_DRAW);
