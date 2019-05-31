@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
+#include <iostream>
 
 NESTetris::NESTetris() :
 commands{
@@ -22,38 +24,40 @@ constants{
 dynamic{
     {"dropFrames", 0},
     {"gravity", 0}},
-currPiece{lrPiece},
+currPiece{nullptr},
 droppedBlockCoords(4, {0, 0, 0}),
-grid{20, 10}
+grid{20, 10},
+pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {
-    currPiece.setPosition(5, 5, 0);
+    currPiece = pieceGen.getRandomPiece();
+    currPiece->setPosition(19, 5, 0);
     dynamic["gravity"] = constants["setGravity"];
 };
 
 void NESTetris::runFrame()
 {
     if (commands["doCCW"]) {
-        currPiece.rotate(-1);
-        if (grid.collisionCheck(currPiece.coords)) {
-            currPiece.rotate(1);
+        currPiece->rotate(-1);
+        if (grid.collisionCheck(currPiece->coords)) {
+            currPiece->rotate(1);
         }
     }
     if (commands["doCW"]) {
-        currPiece.rotate(1);
-        if (grid.collisionCheck(currPiece.coords)) {
-            currPiece.rotate(-1);
+        currPiece->rotate(1);
+        if (grid.collisionCheck(currPiece->coords)) {
+            currPiece->rotate(-1);
         }
     }
     if (commands["doLeft"]) {
-        currPiece.translate(0, -1);
-        if (grid.collisionCheck(currPiece.coords)) {
-            currPiece.translate(0, 1);
+        currPiece->translate(0, -1);
+        if (grid.collisionCheck(currPiece->coords)) {
+            currPiece->translate(0, 1);
         }
     }
     if (commands["doRight"]) {
-        currPiece.translate(0, 1);
-        if (grid.collisionCheck(currPiece.coords)) {
-            currPiece.translate(0, -1);
+        currPiece->translate(0, 1);
+        if (grid.collisionCheck(currPiece->coords)) {
+            currPiece->translate(0, -1);
         }
     }
     if (commands["softDrop"]) {
@@ -65,18 +69,19 @@ void NESTetris::runFrame()
 
     if (dynamic["dropFrames"] >= dynamic["gravity"]) {
         dynamic["dropFrames"] = 0;
-        currPiece.translate(-1, 0);
-        if (grid.collisionCheck(currPiece.coords)) {
-            currPiece.setPosition(19, 5, 0);
+        currPiece->translate(-1, 0);
+        if (grid.collisionCheck(currPiece->coords)) {
+            currPiece = pieceGen.getRandomPiece();
+            currPiece->setPosition(19, 5, 0);
         }
     }    
     else {
         dynamic["dropFrames"] += 1;
     }
     for (int i = 0; i < 4; ++i) {
-        droppedBlockCoords[i][0] = currPiece.coords[i].first;
-        droppedBlockCoords[i][1] = currPiece.coords[i].second;
-        droppedBlockCoords[i][2] = currPiece.data.index;
+        droppedBlockCoords[i][0] = currPiece->coords[i].first;
+        droppedBlockCoords[i][1] = currPiece->coords[i].second;
+        droppedBlockCoords[i][2] = currPiece->data.index;
     }
     resetBool(commands);
 }

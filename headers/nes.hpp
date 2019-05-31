@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "pieces.hpp"
 #include "grid.hpp"
@@ -13,8 +14,9 @@ struct NESTetris
     std::map<const std::string, bool> commands;
     std::map<const std::string, int> constants, dynamic;
     std::vector<std::vector<int>> droppedBlockCoords;
-    Piece currPiece;
+    std::unique_ptr<Piece> currPiece;
     Grid grid;
+    PieceGenerator pieceGen;
 
     NESTetris();
     void runFrame();

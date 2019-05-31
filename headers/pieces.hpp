@@ -1,7 +1,11 @@
 #ifndef PIECES
 #define PIECES
 #include <vector>
+#include <string>
 #include <utility>
+#include <map>
+#include <random>
+#include <memory>
 
 struct PieceData
 {
@@ -9,6 +13,7 @@ struct PieceData
     const int numOrients;
     std::vector<std::vector<std::pair<int, int>>> coordOffsets;
 
+    PieceData();
     PieceData(
         const unsigned int index,
         const int numOrients,
@@ -22,18 +27,24 @@ struct Piece
     int centerRow, centerCol, orient;
     std::vector<std::pair<int, int>> coords;
 
+    Piece();
     Piece(const PieceData& data);
     void setPosition(int centerRow, int centerCol, unsigned int orient);
     void rotate(int turns);
     void translate(int dRow, int dCol);
 };
 
-extern const PieceData lrPiece;
-extern const PieceData llPiece;
-extern const PieceData srPiece;
-extern const PieceData slPiece;
-extern const PieceData tPiece;
-extern const PieceData iPiece;
-extern const PieceData sqPiece;
+struct PieceGenerator
+{
+    std::default_random_engine rEng;
+    std::uniform_int_distribution<int> uDistr;
+    std::vector<std::string> pieceList;
+
+    PieceGenerator(std::vector<std::string> pieceList);
+    std::unique_ptr<Piece> getRandomPiece();
+};
+
+extern const std::map<const std::string, PieceData> allPieces;
+extern const PieceData nullPiece;
 
 #endif
