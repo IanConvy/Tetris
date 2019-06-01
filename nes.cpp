@@ -133,6 +133,10 @@ void NESTetris::runActiveFrame()
         dynamic["dropFrames"] = 0;
         currPiece->translate(-1, 0);
         if (grid.collisionCheck(currPiece->coords)) {
+            currPiece->translate(1, 0);
+            for (auto& rowCol : currPiece->coords) {
+                grid.fill(rowCol.first, rowCol.second, currPiece->data.index);
+            }
             currPiece = pieceGen.getRandomPiece();
             currPiece->setPosition(19, 5, 0);
             flags["frozen"] = true;

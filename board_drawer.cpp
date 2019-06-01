@@ -23,7 +23,7 @@ playFieldPos{
 gridHeight{20},
 gridWidth{10},   
 blockTextures(3, 0),
-pieceTexMap{0, 1, 1, 0, 2, 2, 2},
+pieceTexMap{0, 0, 1, 1, 0, 2, 2, 2},
 blockWidthSpacing{(playFieldPos[2] - playFieldPos[0])/gridWidth},
 blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
 {    
