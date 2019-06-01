@@ -30,7 +30,8 @@ dynamic{
     {"dasFrames", 0},
     {"frozenFraes", 0}},
 flags{
-    {"frozen", false}},
+    {"frozen", false},
+    {"newPiece", false}},
 currPiece{nullptr},
 droppedBlockCoords(4, {0, 0, 0}),
 grid{20, 10},
@@ -62,7 +63,14 @@ void NESTetris::runFrozenFrame()
 }
 
 void NESTetris::runActiveFrame()
-{   // CCW Rotations:
+{   
+    // New Piece:
+    if (flags["newPiece"]) {
+        currPiece = pieceGen.getRandomPiece();
+        currPiece->setPosition(19, 5, 0);
+        flags["newPiece"] = false;
+    }
+    // CCW Rotations:
     if (commands["doCCW"]) {
         currPiece->rotate(-1);
         if (grid.collisionCheck(currPiece->coords)) {
@@ -137,9 +145,8 @@ void NESTetris::runActiveFrame()
             for (auto& rowCol : currPiece->coords) {
                 grid.fill(rowCol.first, rowCol.second, currPiece->data.index);
             }
-            currPiece = pieceGen.getRandomPiece();
-            currPiece->setPosition(19, 5, 0);
             flags["frozen"] = true;
+            flags["newPiece"] = true;
         }
     }    
     else {
