@@ -11,7 +11,7 @@
 
 struct NESTetris
 {
-    std::map<const std::string, bool> commands;
+    std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     std::vector<std::vector<int>> droppedBlockCoords;
     std::unique_ptr<Piece> currPiece;
@@ -20,6 +20,8 @@ struct NESTetris
 
     NESTetris();
     void runFrame();
+    void runActiveFrame();
+    void runFrozenFrame();
     const std::vector<std::vector<int>>& getBlockCoords();
 };
 

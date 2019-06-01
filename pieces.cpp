@@ -67,7 +67,7 @@ void Piece::translate(int dRow, int dCol)
 }
 
 PieceGenerator::PieceGenerator(std::vector<std::string> pieceList) :
-uDistr(0, (pieceList.size() > 0 ? pieceList.size() - 1 : 0)),
+uDistr(0, pieceList.size() > 0 ? pieceList.size() - 1 : 0),
 pieceList{pieceList}
 {
     std::random_device rDev;

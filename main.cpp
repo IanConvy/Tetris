@@ -29,20 +29,24 @@ int main()
         NESTetris game{};
         InputHandler inputs{window, game.commands};
 
-        double prev_time = 0;
-        double frameSecs = 1 / 60.1;
+        double engTime = 0;
+        double rendTime = 0;
+        double engSecs = 1 / 60.1;
+        double rendSecs = 1 / 60.1;
+        
         while (!glfwWindowShouldClose(window)) {
-            double new_time = glfwGetTime();
-            double timeDiff = new_time - prev_time;
-            if (timeDiff >= frameSecs) {
-                // std::cout << 1 / timeDiff << std::endl;
+            double newTime = glfwGetTime();
+            if (newTime - engTime >= engSecs) {
                 inputs.setCommands();
                 game.runFrame();
+                engTime = newTime;
+            }
+            if (newTime - rendTime >= rendSecs) {
                 auto blockCoords = game.getBlockCoords();
                 drawer.drawBoard();
                 drawer.drawBlocks(blockCoords);
                 glfwSwapBuffers(window);
-                prev_time = new_time;
+                rendTime = newTime;
             }
             glfwPollEvents();
         }

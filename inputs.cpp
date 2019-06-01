@@ -48,26 +48,26 @@ void InputHandler::setCommands()
         flags["sHeld"] = false;
     }
     // Left key:
+    if (pressed["left"] && flags["leftHeld"]) { // This being first is important to avoid double move.
+            commands["leftDAS"] = true;
+        }
     if (pressed["left"] && !flags["leftHeld"] && !flags["rightHeld"]) {
         flags["leftHeld"] = true;
         commands["doLeft"] = true;
         commands["clearDAS"] = true;
     }    
-    if (pressed["left"] && flags["leftHeld"]) {
-        commands["leftDAS"];
-    }
     if (!pressed["left"]) {
         flags["leftHeld"] = false;
     }
     // Right key:
+    if (pressed["right"] && flags["rightHeld"]) { // This being first is important to avoid double move.
+        commands["rightDAS"] = true;
+    }
     if (pressed["right"] && !flags["rightHeld"] && !flags["leftHeld"]) {
         flags["rightHeld"] = true;
         commands["doRight"] = true;
         commands["clearDAS"] = true;
     }    
-    if (pressed["right"] && flags["rightHeld"]) {
-        commands["rightDAS"] = true;
-    }
     if (!pressed["right"]) {
         flags["rightHeld"] = false;
     }
