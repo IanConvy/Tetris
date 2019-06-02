@@ -2,11 +2,13 @@
 
 #include <vector>
 #include <utility>
+#include <iostream>
 
 Grid::Grid(const int height, const int width) :
 height{height},
 width{width},
-grid(height*width, 0)
+grid(height*width, 0),
+bufferGrid(height*width, 0)
 {}
 
 int Grid::get(const int row, const int col)
@@ -17,6 +19,35 @@ int Grid::get(const int row, const int col)
 void Grid::fill(const int row, const int col, const int index)
 {
     grid[width*row + col] = index;
+}
+
+void Grid::swapGrids()
+{
+    grid.swap(bufferGrid);
+}
+
+void Grid::clearRows(const std::vector<int>& filledRows, bool buffer)
+{
+    if (buffer) {
+        bufferGrid = grid;
+    }
+    for (int i = 0; i < filledRows.size(); ++i) {
+        auto endItr = grid.begin();
+        auto startItr = grid.begin() + width*(filledRows[i] + 1);
+        if (filledRows[i] != filledRows.back()) {
+            endItr += width*filledRows[i + 1];
+        }
+        else {
+            endItr = grid.end();
+        }
+        for (; startItr < endItr; ++startItr) {
+            *(startItr - width*(i + 1)) = *startItr;
+        }
+    }
+    if (buffer) {
+        swapGrids();
+    }
+    
 }
 
 bool Grid::collisionCheck(const std::vector<std::pair<int, int>> coords)
@@ -46,4 +77,30 @@ std::vector<std::vector<int>> Grid::getFilledBlocks()
         }
     }
     return filledBlocks;
+}
+
+bool Grid::inBounds(const int row, const int col)
+{
+    return row >= 0 && row < height && col >= 0 && col < width;
+}
+
+std::vector<int> Grid::getFilledRows()
+{
+    std::vector<int> filledRows;
+    int row = 0, col = 0, colCount = 0;
+    for (auto& val : grid) {
+        ++col;
+        if (val) {
+            ++colCount;
+        }
+        if (col >= width) {
+            if (colCount == width) {
+                filledRows.push_back(row);
+            }
+            ++row;
+            col = 0;
+            colCount = 0;
+        }
+    }
+    return filledRows;
 }

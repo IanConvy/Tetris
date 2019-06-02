@@ -43,10 +43,8 @@ int main()
             }
             if (newTime - rendTime >= rendSecs) {
                 auto fillBlocks = game.grid.getFilledBlocks();
-                auto blockCoords = game.getBlockCoords();
                 drawer.drawBoard();
                 drawer.drawBlocks(fillBlocks);
-                drawer.drawBlocks(blockCoords);
                 glfwSwapBuffers(window);
                 rendTime = newTime;
             }

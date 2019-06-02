@@ -13,7 +13,7 @@ struct NESTetris
 {
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
-    std::vector<std::vector<int>> droppedBlockCoords;
+    std::vector<int> filledRows;
     std::unique_ptr<Piece> currPiece;
     Grid grid;
     PieceGenerator pieceGen;
@@ -22,7 +22,9 @@ struct NESTetris
     void runFrame();
     void runActiveFrame();
     void runFrozenFrame();
-    const std::vector<std::vector<int>>& getBlockCoords();
+    void runClearFrame();
+    void writePiece();
+    void clearPiece();
 };
 
 void resetBool(std::map<const std::string, bool>& flags);
