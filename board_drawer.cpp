@@ -3,11 +3,13 @@
 
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "headers/stb_image.hpp"
 #include "headers/shader_s.hpp"
+#include "headers/pieces.hpp"
 
 BoardDrawer::BoardDrawer() : 
 brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl"),
@@ -19,7 +21,10 @@ brdVertices{
         1035,   899,    0,      1, 0},
 playFieldPos{
     390, 159,   710, 159,
-    390, 805,   710, 805}, 
+    390, 805,   710, 805},
+previewPos{
+    776, 416,   902, 416,
+    776, 550,   902, 550},
 gridHeight{20},
 gridWidth{10},   
 blockTextures(3, 0),
@@ -27,15 +32,15 @@ pieceTexMap{0, 0, 1, 1, 0, 2, 2, 2},
 blockWidthSpacing{(playFieldPos[2] - playFieldPos[0])/gridWidth},
 blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
 {    
-    brdShader.setInt("totalWidth", 1035);
-    brdShader.setInt("totalHeight", 899);
+    brdShader.setFloat("totalWidth", 1035);
+    brdShader.setFloat("totalHeight", 899);
     glGenVertexArrays(1, &sqrArray);
     glBindVertexArray(sqrArray);
 
     glGenBuffers(1, &sqrBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, sqrBuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(int), (void*)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(int), (void*)(3 * sizeof(int)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     
@@ -70,20 +75,62 @@ void BoardDrawer::drawBoard()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void BoardDrawer::drawBlocks(const std::vector<std::vector<int>> blocks) {
+void BoardDrawer::drawPreview(const PieceData& data)
+{
+    int minWidth = data.coordOffsets[0][0].second; 
+    int maxWidth = data.coordOffsets[0][0].second; 
+    int minHeight = data.coordOffsets[0][0].first;  
+    int maxHeight = data.coordOffsets[0][0].first; 
+
+    for (auto& rowCol : data.coordOffsets[0]) {
+        if (rowCol.first < minHeight) {
+            minHeight = rowCol.first;
+        }
+        if (rowCol.first > maxHeight) {
+            maxHeight = rowCol.first;
+        }
+        if (rowCol.second < minWidth) {
+            minWidth = rowCol.second;
+        }
+        if (rowCol.second > maxWidth) {
+            maxWidth = rowCol.second;
+        }
+    }
+    float spacing = (previewPos[2] - previewPos[0]) / 4;
+    float height = spacing * (maxHeight - minHeight + 1);
+    float width = spacing * (maxWidth - minWidth + 1);
+    float targetHeight = (previewPos[5] + previewPos[1] + height) / 2;
+    float targetWidth = (previewPos[2] + previewPos[0] - width) / 2;
+    float cornerHeight = -spacing*minHeight;
+    float cornerWidth = spacing*minWidth;
+    float heightOffset = targetHeight - cornerHeight;
+    float widthOffset = targetWidth - cornerWidth;
+
+    for (auto& rowCol : data.coordOffsets[0]) {
+        const float x0 = rowCol.second*spacing + widthOffset;
+        const float x1 = (rowCol.second + 1)*spacing + widthOffset;
+        const float y0 = -rowCol.first*spacing + heightOffset;
+        const float y1 = -(rowCol.first + 1)*spacing + heightOffset;
+        drawBlock(x0, x1, y0, y1, data.index);
+    }
+    
+}
+
+void BoardDrawer::drawPieceBlocks(const std::vector<std::vector<int>> blocks) {
     for (auto& rowColIndex : blocks) {
-        drawBlock(rowColIndex[0], rowColIndex[1], rowColIndex[2]);
+        int row = rowColIndex[0];
+        int col = rowColIndex[1];
+        const float x0 = playFieldPos[0] + col*blockWidthSpacing;
+        const float x1 = playFieldPos[0] + (col + 1)*blockWidthSpacing;
+        const float y0 = playFieldPos[5] - row*blockHeightSpacing;
+        const float y1 = playFieldPos[5] - (row + 1)*blockHeightSpacing;
+        drawBlock(x0, x1, y0, y1, rowColIndex[2]);
     }
 }
 
-void BoardDrawer::drawBlock(const int row, const int col, const unsigned int index)
+void BoardDrawer::drawBlock(const float x0, const float x1, const float y0, const float y1, const unsigned int index)
 {
-    const int x0 = playFieldPos[0] + col*blockWidthSpacing;
-    const int x1 = playFieldPos[0] + (col + 1)*blockWidthSpacing;
-    const int y0 = playFieldPos[5] - row*blockHeightSpacing;
-    const int y1 = playFieldPos[5] - (row + 1)*blockHeightSpacing;
-
-    std::vector<int> blockVertices = {
+    std::vector<float> blockVertices = {
         x0, y1, 0,      0, 1,
         x1, y1, 0,      1, 1,
         x0, y0, 0,      0, 0,
@@ -93,7 +140,7 @@ void BoardDrawer::drawBlock(const int row, const int col, const unsigned int ind
     glBindTexture(GL_TEXTURE_2D, texture);
     brdShader.use();
     glBindVertexArray(sqrArray);
-    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(int), &blockVertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(float), &blockVertices[0], GL_STATIC_DRAW);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 

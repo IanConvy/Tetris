@@ -19,7 +19,7 @@ commands{
     {"rightDAS", false},
     {"clearDAS", false}},
 constants{
-    {"setGravity", 4},
+    {"setGravity", 200},
     {"dropGravity", 2},
     {"dasLimit", 16},
     {"dasFloor", 10},

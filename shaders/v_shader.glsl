@@ -1,10 +1,10 @@
 #version 330 core
 
-layout (location = 0) in ivec3 aPos;
-layout (location = 1) in ivec2 aTexCoord;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
 
-uniform int totalWidth;
-uniform int totalHeight;
+uniform float totalWidth;
+uniform float totalHeight;
 
 out vec2 TexCoord;
 

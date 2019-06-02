@@ -44,7 +44,8 @@ int main()
             if (newTime - rendTime >= rendSecs) {
                 auto fillBlocks = game.grid.getFilledBlocks();
                 drawer.drawBoard();
-                drawer.drawBlocks(fillBlocks);
+                drawer.drawPieceBlocks(fillBlocks);
+                drawer.drawPreview(game.currPiece->data);
                 glfwSwapBuffers(window);
                 rendTime = newTime;
             }
