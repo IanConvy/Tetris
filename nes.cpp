@@ -25,7 +25,7 @@ constants{
     {"dropGravity", 2},
     {"dasLimit", 15},
     {"dasFloor", 10},
-    {"entryDelay", 17},
+    {"entryDelay", 18},
     {"firstDelay", 96}},
 dynamic{
     {"dropFrames", 0},
