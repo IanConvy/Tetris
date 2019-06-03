@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <iomanip>
 
 NESTetris::NESTetris() :
 commands{
@@ -22,9 +23,9 @@ commands{
 constants{
     {"setGravity", 1},
     {"dropGravity", 2},
-    {"dasLimit", 16},
+    {"dasLimit", 15},
     {"dasFloor", 10},
-    {"entryDelay", 18},
+    {"entryDelay", 17},
     {"firstDelay", 96}},
 dynamic{
     {"dropFrames", 0},
@@ -45,10 +46,12 @@ pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPie
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
     dynamic["gravity"] = constants["setGravity"];
+    writePiece();
 };
 
 void NESTetris::runFrame()
 {
+    // std::cout << std::setw(2) << std::setfill('0') << "\r" << dynamic["dasFrames"] << std::flush;
     if (commands["reset"]) {
         resetGame();
     }
@@ -74,6 +77,7 @@ void NESTetris::runFrozenFrame()
         dynamic["frozenFrames"] = 0;
         flags["frozen"] = false;
         updatePiece();
+        writePiece();
     }
 }
 
@@ -123,6 +127,10 @@ void NESTetris::runClearFrame()
 void NESTetris::runActiveFrame()
 {   
     clearPiece();
+    // DAS Clear:
+    if (commands["clearDAS"]) {
+        dynamic["dasFrames"] = 0;
+    }
     // CCW Rotations:
     if (commands["doCCW"]) {
         currPiece->rotate(-1);
@@ -178,10 +186,6 @@ void NESTetris::runActiveFrame()
         else {
             dynamic["dasFrames"] += 1;
         }
-    }
-    // DAS Clear:
-    if (commands["clearDAS"]) {
-        dynamic["dasFrames"] = 0;
     }
     // Gravity:
     if (commands["softDrop"]) {

@@ -39,7 +39,7 @@ int main()
             if (newTime - engTime >= engSecs) {
                 inputs.setCommands();
                 game.runFrame();
-                engTime = newTime;
+                engTime = newTime;  
             }
             if (newTime - rendTime >= rendSecs) {
                 auto fillBlocks = game.grid.getFilledBlocks();
