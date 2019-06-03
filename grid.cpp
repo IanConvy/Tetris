@@ -107,3 +107,9 @@ std::vector<int> Grid::getFilledRows()
     }
     return filledRows;
 }
+
+void Grid::reset() 
+{
+    grid = std::vector<int>(height*width, 0);
+    bufferGrid = std::vector<int>(height*width, 0);
+}

@@ -18,6 +18,7 @@ struct Grid
     bool inBounds(const int row, const int col);
     std::vector<std::vector<int>> getFilledBlocks();
     std::vector<int> getFilledRows();
+    void reset();
 };
 
 #endif

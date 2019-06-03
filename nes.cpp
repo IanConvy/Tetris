@@ -17,19 +17,22 @@ commands{
     {"softDrop", false},
     {"leftDAS", false},
     {"rightDAS", false},
-    {"clearDAS", false}},
+    {"clearDAS", false},
+    {"reset", false}},
 constants{
-    {"setGravity", 20},
+    {"setGravity", 1},
     {"dropGravity", 2},
     {"dasLimit", 16},
     {"dasFloor", 10},
-    {"entryDelay", 18}},
+    {"entryDelay", 18},
+    {"firstDelay", 96}},
 dynamic{
     {"dropFrames", 0},
     {"gravity", 0},
     {"dasFrames", 0},
     {"frozenFrames", 0},
-    {"clearFrames", 0}},
+    {"clearFrames", 0},
+    {"totalFrames", 0}},
 flags{
     {"frozen", false}},
 currPiece{nullptr},
@@ -46,6 +49,9 @@ pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPie
 
 void NESTetris::runFrame()
 {
+    if (commands["reset"]) {
+        resetGame();
+    }
     if (flags["frozen"] == true) {
         runFrozenFrame();
     }
@@ -58,6 +64,7 @@ void NESTetris::runFrame()
         }
     }
     resetBool(commands);
+    ++ dynamic["totalFrames"];
 }
 
 void NESTetris::runFrozenFrame()
@@ -183,7 +190,7 @@ void NESTetris::runActiveFrame()
     else {
         dynamic["gravity"] = constants["setGravity"];
     }
-    if (dynamic["dropFrames"] >= dynamic["gravity"]) {
+    if (dynamic["totalFrames"] >= constants["firstDelay"] && dynamic["dropFrames"] >= dynamic["gravity"]) {
         dynamic["dropFrames"] = 0;
         currPiece->translate(-1, 0);
         if (grid.collisionCheck(currPiece->coords)) {
@@ -231,6 +238,35 @@ void NESTetris::updatePiece()
     currPiece.swap(nextPiece);
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
+}
+
+void NESTetris::resetGame()
+{
+    commands = {
+        {"doCCW", false},
+        {"doCW", false},
+        {"doLeft", false},
+        {"doRight", false},
+        {"softDrop", false},
+        {"leftDAS", false},
+        {"rightDAS", false},
+        {"clearDAS", false},
+        {"reset", false}};
+    dynamic = {
+        {"dropFrames", 0},
+        {"gravity", 0},
+        {"dasFrames", 0},
+        {"frozenFrames", 0},
+        {"clearFrames", 0},
+        {"totalFrames", 0}};
+    flags = {
+        {"frozen", false}};
+    filledRows.clear();
+    grid.reset();
+    currPiece = pieceGen.getRandomPiece();
+    nextPiece = pieceGen.getRandomPiece();
+    currPiece->setPosition(19, 5, 0);
+    dynamic["gravity"] = constants["setGravity"];
 }
 
 void resetBool(std::map<const std::string, bool>& bools)

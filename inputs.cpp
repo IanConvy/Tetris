@@ -18,12 +18,14 @@ pressed{
     {"s", false},
     {"lef", false},
     {"right", false},
-    {"down", false}},
+    {"down", false},
+    {"esc", false}},
 flags{
     {"aHeld", false},
     {"sHeld", false},
     {"leftHeld", false},
-    {"rightHeld", false}},
+    {"rightHeld", false},
+    {"escHeld", false}},
 commands{commands}
 {
     glfwSetKeyCallback(window, callPtr);
@@ -78,6 +80,16 @@ void InputHandler::setCommands()
     else {
         commands["softDrop"] = false;
     }
+    // Escape key:
+    if (pressed["esc"]) {
+        if (!flags["escHeld"]) {
+            commands["reset"] = true;
+            flags["escHeld"] = true;
+        }
+    }
+    else {
+        flags["escHeld"] = false;
+    }
 }
 
 void InputHandler::keyParser(int key,int action)
@@ -120,6 +132,14 @@ void InputHandler::keyParser(int key,int action)
         }
         if (action == GLFW_RELEASE) {
             pressed["down"] = false;
+        }
+    }
+    if (key == GLFW_KEY_ESCAPE) {
+        if (action == GLFW_PRESS) {
+            pressed["esc"] = true;
+        }
+        if (action == GLFW_RELEASE) {
+            pressed["esc"] = false;
         }
     }
 }

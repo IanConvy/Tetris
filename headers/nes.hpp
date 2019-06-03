@@ -26,6 +26,7 @@ struct NESTetris
     void writePiece();
     void clearPiece();
     void updatePiece();
+    void resetGame();
 };
 
 void resetBool(std::map<const std::string, bool>& flags);
