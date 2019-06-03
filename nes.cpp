@@ -33,11 +33,13 @@ dynamic{
 flags{
     {"frozen", false}},
 currPiece{nullptr},
+nextPiece{nullptr},
 filledRows{},
 grid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {
     currPiece = pieceGen.getRandomPiece();
+    nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
     dynamic["gravity"] = constants["setGravity"];
 };
@@ -64,6 +66,7 @@ void NESTetris::runFrozenFrame()
     if (dynamic["frozenFrames"] >= constants["entryDelay"]) {
         dynamic["frozenFrames"] = 0;
         flags["frozen"] = false;
+        updatePiece();
     }
 }
 
@@ -106,6 +109,7 @@ void NESTetris::runClearFrame()
         dynamic["clearFrames"] = 0;
         filledRows.clear();
         grid.swapGrids();
+        updatePiece();
     }
 }
 
@@ -193,8 +197,6 @@ void NESTetris::runActiveFrame()
             else{
                 flags["frozen"] = true;
             }
-            currPiece = pieceGen.getRandomPiece();
-            currPiece->setPosition(19, 5, 0);
         }
         else {
             writePiece();
@@ -222,6 +224,13 @@ void NESTetris::clearPiece()
             grid.fill(colRow.first, colRow.second, 0);
         }
     }
+}
+
+void NESTetris::updatePiece()
+{
+    currPiece.swap(nextPiece);
+    nextPiece = pieceGen.getRandomPiece();
+    currPiece->setPosition(19, 5, 0);
 }
 
 void resetBool(std::map<const std::string, bool>& bools)

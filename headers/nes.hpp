@@ -14,7 +14,7 @@ struct NESTetris
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     std::vector<int> filledRows;
-    std::unique_ptr<Piece> currPiece;
+    std::unique_ptr<Piece> currPiece, nextPiece;
     Grid grid;
     PieceGenerator pieceGen;
 
@@ -25,6 +25,7 @@ struct NESTetris
     void runClearFrame();
     void writePiece();
     void clearPiece();
+    void updatePiece();
 };
 
 void resetBool(std::map<const std::string, bool>& flags);

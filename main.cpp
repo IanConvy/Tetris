@@ -45,7 +45,7 @@ int main()
                 auto fillBlocks = game.grid.getFilledBlocks();
                 drawer.drawBoard();
                 drawer.drawPieceBlocks(fillBlocks);
-                drawer.drawPreview(game.currPiece->data);
+                drawer.drawPreview(game.nextPiece->data);
                 glfwSwapBuffers(window);
                 rendTime = newTime;
             }
