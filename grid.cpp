@@ -44,6 +44,9 @@ void Grid::clearRows(const std::vector<int>& filledRows, bool buffer)
             *(startItr - width*(i + 1)) = *startItr;
         }
     }
+    for (auto itr = grid.end() - 1; itr > grid.end() - 1 - width*filledRows.size(); --itr) {
+        *itr = 0;
+    }
     if (buffer) {
         swapGrids();
     }
