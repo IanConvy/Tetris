@@ -10,9 +10,11 @@
 #include "headers/stb_image.hpp"
 #include "headers/shader_s.hpp"
 #include "headers/pieces.hpp"
+#include "headers/text.hpp"
 
 BoardDrawer::BoardDrawer() : 
 brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl"),
+textDrawer{},
 brdVertices{
     //        Position         Texture
         0,      0,      0,      0, 1,
@@ -52,6 +54,7 @@ blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sqrIndices.size() * sizeof(unsigned int), &sqrIndices[0], GL_STATIC_DRAW);
     
     createTexture(brdTexture, "images/tetrisboard.png");
+    createTexture(fontTexture, "images/fontbitmap.png");
     createTexture(blockTextures[0], "images/yellowblock.png");
     createTexture(blockTextures[1], "images/redblock.png");
     createTexture(blockTextures[2], "images/whiteblock.png");
@@ -68,15 +71,12 @@ BoardDrawer::~BoardDrawer()
 
 void BoardDrawer::drawBoard() 
 {
-    glBindTexture(GL_TEXTURE_2D, brdTexture);
-    brdShader.use();
-    glBindVertexArray(sqrArray);
-    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(int), &brdVertices[0], GL_STATIC_DRAW);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    drawSquare(brdVertices, brdTexture);
 }
 
 void BoardDrawer::drawPreview(const PieceData& data)
 {
+    int texture = blockTextures[pieceTexMap[data.index]];
     int minWidth = data.coordOffsets[0][0].second; 
     int maxWidth = data.coordOffsets[0][0].second; 
     int minHeight = data.coordOffsets[0][0].first;  
@@ -111,36 +111,55 @@ void BoardDrawer::drawPreview(const PieceData& data)
         const float x1 = (rowCol.second + 1)*spacing + widthOffset;
         const float y0 = -rowCol.first*spacing + heightOffset;
         const float y1 = -(rowCol.first + 1)*spacing + heightOffset;
-        drawBlock(x0, x1, y0, y1, data.index);
+        std::vector<float> vertices = {
+        x0, y1, 0,      0, 1,
+        x1, y1, 0,      1, 1,
+        x0, y0, 0,      0, 0,
+        x1, y0, 0,      1, 0};
+        drawSquare(vertices, texture);
     }
-    
 }
 
 void BoardDrawer::drawPieceBlocks(const std::vector<std::vector<int>> blocks) {
     for (auto& rowColIndex : blocks) {
         int row = rowColIndex[0];
         int col = rowColIndex[1];
+        int texture = blockTextures[pieceTexMap[rowColIndex[2]]];
         const float x0 = playFieldPos[0] + col*blockWidthSpacing;
         const float x1 = playFieldPos[0] + (col + 1)*blockWidthSpacing;
         const float y0 = playFieldPos[5] - row*blockHeightSpacing;
         const float y1 = playFieldPos[5] - (row + 1)*blockHeightSpacing;
-        drawBlock(x0, x1, y0, y1, rowColIndex[2]);
-    }
-}
-
-void BoardDrawer::drawBlock(const float x0, const float x1, const float y0, const float y1, const unsigned int index)
-{
-    std::vector<float> blockVertices = {
+        std::vector<float> vertices = {
         x0, y1, 0,      0, 1,
         x1, y1, 0,      1, 1,
         x0, y0, 0,      0, 0,
         x1, y0, 0,      1, 0};
-        
-    unsigned int texture = blockTextures[pieceTexMap[index]];
+        drawSquare(vertices, texture);
+    }
+}
+
+void BoardDrawer::drawLineCount(std::string lineCount)
+{
+    auto textVertices = textDrawer.getTextVertices(lineCount, 408, 695, 64, 95);
+    for (auto& charVertices : textVertices) {
+        drawSquare(charVertices, fontTexture);
+    }
+}
+
+void BoardDrawer::drawScore(std::string score)
+{
+    auto textVertices = textDrawer.getTextVertices(score, 774, 980, 258, 286);
+    for (auto& charVertices : textVertices) {
+        drawSquare(charVertices, fontTexture);
+    }
+}
+
+void BoardDrawer::drawSquare(std::vector<float> vertices, unsigned int texture)
+{
     glBindTexture(GL_TEXTURE_2D, texture);
     brdShader.use();
     glBindVertexArray(sqrArray);
-    glBufferData(GL_ARRAY_BUFFER, brdVertices.size() * sizeof(float), &blockVertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 

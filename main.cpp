@@ -8,6 +8,7 @@
 #include "headers/inputs.hpp"
 #include "headers/pieces.hpp"
 #include "headers/nes.hpp"
+#include "headers/text.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -46,6 +47,8 @@ int main()
                 drawer.drawBoard();
                 drawer.drawPieceBlocks(fillBlocks);
                 drawer.drawPreview(game.nextPiece->data);
+                drawer.drawLineCount("lines-123");
+                drawer.drawScore("567421");
                 glfwSwapBuffers(window);
                 rendTime = newTime;
             }

@@ -21,7 +21,7 @@ commands{
     {"clearDAS", false},
     {"reset", false}},
 constants{
-    {"setGravity", 1},
+    {"setGravity", 2},
     {"dropGravity", 2},
     {"dasLimit", 15},
     {"dasFloor", 10},
