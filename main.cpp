@@ -4,7 +4,7 @@
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-#include "headers/board_drawer.hpp"
+#include "headers/drawer.hpp"
 #include "headers/inputs.hpp"
 #include "headers/pieces.hpp"
 #include "headers/nes.hpp"
