@@ -26,8 +26,8 @@ int main()
     { // OpenGL scope
         GLFWwindow* window = initialize_window(899, 1035);
 
-        BoardDrawer drawer{};
         NESTetris game{};
+        BoardDrawer drawer{game};
         InputHandler inputs{window, game.commands};
 
         double engTime = 0;
@@ -43,12 +43,7 @@ int main()
                 engTime = newTime;  
             }
             if (newTime - rendTime >= rendSecs) {
-                auto fillBlocks = game.grid.getFilledBlocks();
-                drawer.drawBoard();
-                drawer.drawPieceBlocks(fillBlocks);
-                drawer.drawPreview(game.nextPiece->data);
-                drawer.drawLineCount("lines-123");
-                drawer.drawScore("567421");
+                drawer.drawFrame();
                 glfwSwapBuffers(window);
                 rendTime = newTime;
             }

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -11,9 +12,10 @@
 #include "headers/pieces.hpp"
 #include "headers/text.hpp"
 
-BoardDrawer::BoardDrawer() : 
+BoardDrawer::BoardDrawer(NESTetris& game) : 
 brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl"),
 textDrawer{},
+game{game},
 brdVertices{
     //        Position         Texture
         0,      0,      0,      0, 1,
@@ -68,13 +70,23 @@ BoardDrawer::~BoardDrawer()
     glDeleteVertexArrays(1, &sqrArray);
 }
 
+void BoardDrawer::drawFrame()
+{
+    drawBoard();
+    drawPieceBlocks();
+    drawPreview();
+    drawLineCount("lines-123");
+    drawScore("567421");
+}
+
 void BoardDrawer::drawBoard() 
 {
     drawSquare(brdVertices, brdTexture);
 }
 
-void BoardDrawer::drawPreview(const PieceData& data)
+void BoardDrawer::drawPreview()
 {
+    const PieceData& data  = game.nextPiece->data;
     int texture = blockTextures[pieceTexMap[data.index]];
     int minWidth = data.coordOffsets[0][0].second; 
     int maxWidth = data.coordOffsets[0][0].second; 
@@ -119,8 +131,8 @@ void BoardDrawer::drawPreview(const PieceData& data)
     }
 }
 
-void BoardDrawer::drawPieceBlocks(const std::vector<std::vector<int>> blocks) {
-    for (auto& rowColIndex : blocks) {
+void BoardDrawer::drawPieceBlocks() {
+    for (auto& rowColIndex : game.grid.getFilledBlocks()) {
         int row = rowColIndex[0];
         int col = rowColIndex[1];
         int texture = blockTextures[pieceTexMap[rowColIndex[2]]];

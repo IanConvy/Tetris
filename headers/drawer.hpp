@@ -6,6 +6,7 @@
 #include "shader_s.hpp"
 #include "pieces.hpp"
 #include "text.hpp"
+#include "nes.hpp"
 #include <vector>
 #include <utility>
 #include <string>
@@ -21,17 +22,19 @@ struct BoardDrawer
     std::vector<unsigned int> blockTextures;
     std::vector<unsigned int> pieceTexMap;
     float blockWidthSpacing, blockHeightSpacing; // Requires playFieldPos for initialization 
+    NESTetris& game;
     Shader brdShader;
     TextDrawer textDrawer;
     
-    BoardDrawer();
+    BoardDrawer(NESTetris& game);
     ~BoardDrawer();
     void drawBoard();
     void drawSquare(std::vector<float> vertices, unsigned int texture);
-    void drawPieceBlocks(const std::vector<std::vector<int>> blocks);
-    void drawPreview(const PieceData& data);
+    void drawPieceBlocks();
+    void drawPreview();
     void drawLineCount(std::string lineCount);
     void drawScore(std::string score);
+    void drawFrame();
 };
 
 void createTexture(unsigned int& texID, std::string filePath);
