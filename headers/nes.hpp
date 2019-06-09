@@ -11,6 +11,8 @@
 
 struct NESTetris
 {
+    int startLevel;
+    int firstThreshold;
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     std::vector<int> filledRows;
@@ -19,7 +21,7 @@ struct NESTetris
     Grid grid;
     PieceGenerator pieceGen;
 
-    NESTetris();
+    NESTetris(int startLevel);
     void runFrame();
     void runActiveFrame();
     void runFrozenFrame();
@@ -27,9 +29,12 @@ struct NESTetris
     void writePiece();
     void clearPiece();
     void updatePiece();
+    void setConstants();
+    void checkLevel();
     void resetGame();
 };
 
 void resetBool(std::map<const std::string, bool>& flags);
+
 
 #endif

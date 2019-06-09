@@ -34,6 +34,7 @@ struct BoardDrawer
     void drawPreview();
     void drawLineCount();
     void drawScore();
+    void drawLevel();
     void drawFrame();
 };
 

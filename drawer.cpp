@@ -77,6 +77,7 @@ void BoardDrawer::drawFrame()
     drawPreview();
     drawLineCount();
     drawScore();
+    drawLevel();
 }
 
 void BoardDrawer::drawBoard() 
@@ -165,6 +166,16 @@ void BoardDrawer::drawScore()
     std::string scoreRaw = std::to_string(game.dynamic["score"]);
     std::string scoreStr = scoreRaw.size() < 6 ? std::string(6 - scoreRaw.size(), '0') + scoreRaw : scoreRaw;
     auto textVertices = textDrawer.getTextVertices(scoreStr, 774, 980, 258, 286);
+    for (auto& charVertices : textVertices) {
+        drawSquare(charVertices, fontTexture);
+    }
+}
+
+void BoardDrawer::drawLevel()
+{
+    std::string levelRaw = std::to_string(game.dynamic["level"]);
+    std::string levelStr = levelRaw.size() < 2 ? std::string(2 - levelRaw.size(), '0') + levelRaw : levelRaw;
+    auto textVertices = textDrawer.getTextVertices(levelStr, 843, 902, 642, 671);
     for (auto& charVertices : textVertices) {
         drawSquare(charVertices, fontTexture);
     }

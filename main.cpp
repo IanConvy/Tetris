@@ -1,6 +1,7 @@
 #define GLEW_STATIC
 
 #include <iostream>
+#include <string>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -14,7 +15,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 GLFWwindow* initialize_window(unsigned int height, unsigned int width); 
 
-int main()
+int main(int argc, char* argv[])
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -26,7 +27,9 @@ int main()
     { // OpenGL scope
         GLFWwindow* window = initialize_window(899, 1035);
 
-        NESTetris game{};
+        int startLevel = (argc > 1) ? std::stoi(argv[1]) : 0;
+
+        NESTetris game{startLevel};
         BoardDrawer drawer{game};
         InputHandler inputs{window, game.commands};
 

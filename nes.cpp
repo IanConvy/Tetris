@@ -9,7 +9,9 @@
 #include <iostream>
 #include <iomanip>
 
-NESTetris::NESTetris() :
+NESTetris::NESTetris(int startLevel) :
+startLevel{startLevel},
+firstThreshold{0},
 commands{
     {"doCCW", false},
     {"doCW", false},
@@ -20,13 +22,6 @@ commands{
     {"rightDAS", false},
     {"clearDAS", false},
     {"reset", false}},
-constants{
-    {"setGravity", 2},
-    {"dropGravity", 2},
-    {"dasLimit", 15},
-    {"dasFloor", 10},
-    {"entryDelay", 18},
-    {"firstDelay", 96}},
 dynamic{
     {"dropFrames", 0},
     {"gravity", 0},
@@ -35,7 +30,8 @@ dynamic{
     {"clearFrames", 0},
     {"totalFrames", 0},
     {"lineCount", 0},
-    {"score", 0}},
+    {"score", 0},
+    {"level", startLevel}},
 flags{
     {"frozen", false}},
 lineScore{760, 1900, 5700, 22800},
@@ -45,11 +41,15 @@ filledRows{},
 grid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {
+    setConstants();
     currPiece = pieceGen.getRandomPiece();
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
     dynamic["gravity"] = constants["setGravity"];
     writePiece();
+    if (startLevel <= 9) firstThreshold = 10*(startLevel + 1);
+    else if (startLevel > 9 && startLevel <= 15) firstThreshold = 100;
+    else firstThreshold = 10*(startLevel - 5);
 };
 
 void NESTetris::runFrame()
@@ -208,6 +208,7 @@ void NESTetris::runActiveFrame()
             if (!filledRows.empty()) {
                 dynamic["lineCount"] += filledRows.size();
                 dynamic["score"] += lineScore[filledRows.size() - 1];
+                checkLevel();
                 grid.clearRows(filledRows, true);
             }    
             else{
@@ -249,6 +250,36 @@ void NESTetris::updatePiece()
     currPiece->setPosition(19, 5, 0);
 }
 
+void NESTetris::checkLevel()
+{
+    std::cout << dynamic["level"] << std::endl;
+    if (dynamic["lineCount"] >= firstThreshold) {
+        dynamic["level"] = startLevel + (dynamic["lineCount"] - firstThreshold)/10 + 1;
+        setConstants();
+    }
+}
+
+void NESTetris::setConstants()
+{
+    constants["dropGravity"] = 1;
+    constants["dasLimit"] = 15;
+    constants["dasFloor"] = 10;
+    constants["entryDelay"] = 18;
+    constants["firstDelay"] = 96;
+    constants["width"] = 10;
+    constants["height"] = 20;
+    lineScore = {
+        40*(dynamic["level"] + 1),
+        100*(dynamic["level"] + 1),
+        300*(dynamic["level"] + 1),
+        1200*(dynamic["level"] + 1)};
+    if (dynamic["level"] <= 8) constants["setGravity"] = 47 - 5*dynamic["level"];
+    else if (dynamic["level"] == 9) constants["setGravity"] = 5;
+    else if (dynamic["level"] > 9 && dynamic["level"] <= 18) constants["setGravity"] = 4 - (dynamic["level"]-10)/3;
+    else if (dynamic["level"] > 18 && dynamic["level"] <= 28) constants["setGravity"] = 1;
+    else if (dynamic["level"] > 28) constants["setGravity"] = 0;
+}
+
 void NESTetris::resetGame()
 {
     commands = {
@@ -269,7 +300,8 @@ void NESTetris::resetGame()
         {"clearFrames", 0},
         {"totalFrames", 0},
         {"lineCount", 0},
-        {"score", 0}};
+        {"score", 0},
+        {"level", startLevel}};
     flags = {
         {"frozen", false}};
     filledRows.clear();
