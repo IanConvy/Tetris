@@ -35,6 +35,7 @@ dynamic{
 flags{
     {"frozen", false}},
 lineScore{760, 1900, 5700, 22800},
+lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
 nextPiece{nullptr},
 filledRows{},
@@ -54,7 +55,6 @@ pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPie
 
 void NESTetris::runFrame()
 {
-    // std::cout << std::setw(2) << std::setfill('0') << "\r" << dynamic["dasFrames"] << std::flush;
     if (commands["reset"]) {
         resetGame();
     }
@@ -208,6 +208,7 @@ void NESTetris::runActiveFrame()
             if (!filledRows.empty()) {
                 dynamic["lineCount"] += filledRows.size();
                 dynamic["score"] += lineScore[filledRows.size() - 1];
+                ++lineTypeCount[filledRows.size() - 1];
                 checkLevel();
                 grid.clearRows(filledRows, true);
             }    
@@ -252,7 +253,6 @@ void NESTetris::updatePiece()
 
 void NESTetris::checkLevel()
 {
-    std::cout << dynamic["level"] << std::endl;
     if (dynamic["lineCount"] >= firstThreshold) {
         dynamic["level"] = startLevel + (dynamic["lineCount"] - firstThreshold)/10 + 1;
         setConstants();
@@ -304,6 +304,7 @@ void NESTetris::resetGame()
         {"level", startLevel}};
     flags = {
         {"frozen", false}};
+    lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
     grid.reset();
     currPiece = pieceGen.getRandomPiece();

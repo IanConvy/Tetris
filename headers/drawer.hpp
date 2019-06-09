@@ -33,6 +33,7 @@ struct BoardDrawer
     void drawPieceBlocks();
     void drawPreview();
     void drawLineCount();
+    void drawLineTypeCount();
     void drawScore();
     void drawLevel();
     void drawFrame();

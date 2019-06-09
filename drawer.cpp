@@ -2,6 +2,7 @@
 #include "headers/drawer.hpp"
 
 #include <vector>
+#include <string>
 #include <iostream>
 #include <memory>
 
@@ -76,6 +77,7 @@ void BoardDrawer::drawFrame()
     drawPieceBlocks();
     drawPreview();
     drawLineCount();
+    drawLineTypeCount();
     drawScore();
     drawLevel();
 }
@@ -158,6 +160,22 @@ void BoardDrawer::drawLineCount()
     auto textVertices = textDrawer.getTextVertices(lineCountStr, 408, 695, 64, 95);
     for (auto& charVertices : textVertices) {
         drawSquare(charVertices, fontTexture);
+    }
+}
+
+void BoardDrawer::drawLineTypeCount()
+{
+    int type = 0;
+    std::vector<std::string> typeLabels{"single - ", "double - ", "triple - ", "tetris - "};
+    for (const auto& typeCount : game.lineTypeCount) {
+        std::string countRaw = std::to_string(typeCount);
+        std::string countStr = typeLabels[type] + 
+            (countRaw.size() < 3 ? std::string(3 - countRaw.size(), '0') + countRaw : countRaw);
+        auto textVertices = textDrawer.getTextVertices(countStr, 68, 333, 630 + 50*type, 630 + 50*type + 18);
+        for (auto& charVertices : textVertices) {
+            drawSquare(charVertices, fontTexture);
+        }
+        ++type;
     }
 }
 
