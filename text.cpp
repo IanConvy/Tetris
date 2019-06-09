@@ -62,7 +62,6 @@ std::vector<std::vector<float>> TextDrawer::getTextVertices(std::string text, fl
         float x1Char = x0Char + spacing;
         float x0Tex = charTexCoords[c][0] / 3960.0;
         float x1Tex = charTexCoords[c][1] / 3960.0;
-        std::cout << x0Tex << " " << x1Tex <<  std::endl;
         std::vector<float> charVertices{
             x0Char, y1, 0,  x0Tex, 0,
             x1Char, y1, 0,  x1Tex, 0,

@@ -33,9 +33,12 @@ dynamic{
     {"dasFrames", 0},
     {"frozenFrames", 0},
     {"clearFrames", 0},
-    {"totalFrames", 0}},
+    {"totalFrames", 0},
+    {"lineCount", 0},
+    {"score", 0}},
 flags{
     {"frozen", false}},
+lineScore{760, 1900, 5700, 22800},
 currPiece{nullptr},
 nextPiece{nullptr},
 filledRows{},
@@ -203,6 +206,8 @@ void NESTetris::runActiveFrame()
             writePiece();
             filledRows = grid.getFilledRows();
             if (!filledRows.empty()) {
+                dynamic["lineCount"] += filledRows.size();
+                dynamic["score"] += lineScore[filledRows.size() - 1];
                 grid.clearRows(filledRows, true);
             }    
             else{
@@ -262,7 +267,9 @@ void NESTetris::resetGame()
         {"dasFrames", 0},
         {"frozenFrames", 0},
         {"clearFrames", 0},
-        {"totalFrames", 0}};
+        {"totalFrames", 0},
+        {"lineCount", 0},
+        {"score", 0}};
     flags = {
         {"frozen", false}};
     filledRows.clear();

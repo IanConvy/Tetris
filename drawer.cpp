@@ -75,8 +75,8 @@ void BoardDrawer::drawFrame()
     drawBoard();
     drawPieceBlocks();
     drawPreview();
-    drawLineCount("lines-123");
-    drawScore("567421");
+    drawLineCount();
+    drawScore();
 }
 
 void BoardDrawer::drawBoard() 
@@ -149,17 +149,22 @@ void BoardDrawer::drawPieceBlocks() {
     }
 }
 
-void BoardDrawer::drawLineCount(std::string lineCount)
+void BoardDrawer::drawLineCount()
 {
-    auto textVertices = textDrawer.getTextVertices(lineCount, 408, 695, 64, 95);
+    std::string lineCountRaw = std::to_string(game.dynamic["lineCount"]);
+    std::string lineCountStr = std::string("lines-") + 
+        (lineCountRaw.size() < 3 ? std::string(3 - lineCountRaw.size(), '0') + lineCountRaw : lineCountRaw);
+    auto textVertices = textDrawer.getTextVertices(lineCountStr, 408, 695, 64, 95);
     for (auto& charVertices : textVertices) {
         drawSquare(charVertices, fontTexture);
     }
 }
 
-void BoardDrawer::drawScore(std::string score)
+void BoardDrawer::drawScore()
 {
-    auto textVertices = textDrawer.getTextVertices(score, 774, 980, 258, 286);
+    std::string scoreRaw = std::to_string(game.dynamic["score"]);
+    std::string scoreStr = scoreRaw.size() < 6 ? std::string(6 - scoreRaw.size(), '0') + scoreRaw : scoreRaw;
+    auto textVertices = textDrawer.getTextVertices(scoreStr, 774, 980, 258, 286);
     for (auto& charVertices : textVertices) {
         drawSquare(charVertices, fontTexture);
     }

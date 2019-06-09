@@ -32,8 +32,8 @@ struct BoardDrawer
     void drawSquare(std::vector<float> vertices, unsigned int texture);
     void drawPieceBlocks();
     void drawPreview();
-    void drawLineCount(std::string lineCount);
-    void drawScore(std::string score);
+    void drawLineCount();
+    void drawScore();
     void drawFrame();
 };
 

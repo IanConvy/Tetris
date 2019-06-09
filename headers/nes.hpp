@@ -14,6 +14,7 @@ struct NESTetris
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     std::vector<int> filledRows;
+    std::vector<int> lineScore;
     std::unique_ptr<Piece> currPiece, nextPiece;
     Grid grid;
     PieceGenerator pieceGen;
