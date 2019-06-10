@@ -14,12 +14,12 @@ struct BoardDrawer
     unsigned int sqrArray; 
     unsigned int brdTexture, fontTexture;
     unsigned int sqrBuffer, sqrIndexBuffer;
-    float gridHeight, gridWidth;
-    std::vector<float> brdVertices;
-    std::vector<float> playFieldPos, previewPos;
+    const float gridHeight, gridWidth;
+    const std::vector<float> brdVertices;
+    const std::vector<float> playFieldPos, previewPos;
     std::vector<unsigned int> blockTextures;
-    std::vector<unsigned int> pieceTexMap;
-    float blockWidthSpacing, blockHeightSpacing; // Requires playFieldPos for initialization 
+    const std::vector<unsigned int> pieceTexMap;
+    const float blockWidthSpacing, blockHeightSpacing; // Requires playFieldPos for initialization 
     NESTetris& game;
     Shader brdShader;
     TextDrawer textDrawer;
@@ -27,7 +27,7 @@ struct BoardDrawer
     BoardDrawer(NESTetris& game);
     ~BoardDrawer();
     void drawBoard();
-    void drawSquare(std::vector<float> vertices, unsigned int texture);
+    void drawSquare(const std::vector<float>& vertices, unsigned int texture);
     void drawPieceBlocks();
     void drawPreview();
     void drawLineCount();

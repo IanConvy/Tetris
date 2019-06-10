@@ -199,7 +199,7 @@ void BoardDrawer::drawLevel()
     }
 }
 
-void BoardDrawer::drawSquare(std::vector<float> vertices, unsigned int texture)
+void BoardDrawer::drawSquare(const std::vector<float>& vertices, unsigned int texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
     brdShader.use();
