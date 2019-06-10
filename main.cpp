@@ -10,7 +10,6 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-GLFWwindow* initialize_window(unsigned int height, unsigned int width); 
 
 int main(int argc, char* argv[])
 {
@@ -22,9 +21,15 @@ int main(int argc, char* argv[])
     glfwSwapInterval(1);
 
     { // OpenGL scope
-        GLFWwindow* window = initialize_window(899, 1035);
+        int width = 899; 
+        int height = 1035;
+        GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL", nullptr, nullptr);
+        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+        glfwMakeContextCurrent(window);
+        glewExperimental = GL_TRUE;
+        glewInit();
 
-        int startLevel = (argc > 1) ? std::stoi(argv[1]) : 0;
+        const int startLevel = (argc > 1) ? std::stoi(argv[1]) : 0;
 
         NESTetris game{startLevel};
         BoardDrawer drawer{game};
@@ -32,8 +37,8 @@ int main(int argc, char* argv[])
 
         double engTime = 0;
         double rendTime = 0;
-        double engSecs = 1 / 60.1;
-        double rendSecs = 1 / 60.1;
+        const double engSecs = 1 / 60.1;
+        const double rendSecs = 1 / 60.1;
         
         while (!glfwWindowShouldClose(window)) {
             double newTime = glfwGetTime();
@@ -64,14 +69,4 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-}
-
-GLFWwindow* initialize_window(unsigned int height, unsigned int width)
-{
-    GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL", nullptr, nullptr);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwMakeContextCurrent(window);
-    glewExperimental = GL_TRUE;
-    glewInit();
-    return window;
 }
