@@ -2,14 +2,13 @@
 
 #include <vector>
 #include <string>
-#include <utility>
 #include <map>
 #include <memory>
 
 PieceData::PieceData(
     const unsigned int pieceIndex,
     const int numOrients,
-    std::vector<std::vector<std::pair<int, int>>> coordOffsets) : 
+    std::vector<std::vector<std::vector<int>>> coordOffsets) : 
 index{pieceIndex},
 numOrients{numOrients},
 coordOffsets{coordOffsets}
@@ -43,8 +42,8 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
     centerCol = newCenterCol;
     orient = newOrient;
     for (int i = 0; i < data.coordOffsets[orient].size(); ++i) {
-        coords[i].first = centerRow + data.coordOffsets[orient][i].first;
-        coords[i].second = centerCol + data.coordOffsets[orient][i].second;
+        coords[i][0] = centerRow + data.coordOffsets[orient][i][0];
+        coords[i][1] = centerCol + data.coordOffsets[orient][i][1];
     }
 }
 

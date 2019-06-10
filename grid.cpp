@@ -1,7 +1,6 @@
 #include "headers/grid.hpp"
 
 #include <vector>
-#include <utility>
 
 Grid::Grid(const int height, const int width) :
 height{height},
@@ -52,12 +51,12 @@ void Grid::clearRows(const std::vector<int>& filledRows, bool buffer)
     
 }
 
-bool Grid::collisionCheck(const std::vector<std::pair<int, int>> coords)
+bool Grid::collisionCheck(const std::vector<std::vector<int>> coords)
 {
     bool collision = false;
     for (auto& rowCol : coords) {
-        bool outOfBounds = rowCol.first < 0 || rowCol.second < 0 || rowCol.second >= width;
-        if (outOfBounds || rowCol.first < height && get(rowCol.first, rowCol.second)) {
+        bool outOfBounds = rowCol[0] < 0 || rowCol[1] < 0 || rowCol[1] >= width;
+        if (outOfBounds || rowCol[0] < height && get(rowCol[0], rowCol[1])) {
             collision = true;
         }
     }

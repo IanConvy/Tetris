@@ -2,7 +2,6 @@
 #define PIECES
 #include <vector>
 #include <string>
-#include <utility>
 #include <map>
 #include <random>
 #include <memory>
@@ -11,13 +10,13 @@ struct PieceData
 {
     const unsigned int index;
     const int numOrients;
-    std::vector<std::vector<std::pair<int, int>>> coordOffsets;
+    std::vector<std::vector<std::vector<int>>> coordOffsets;
 
     PieceData();
     PieceData(
         const unsigned int index,
         const int numOrients,
-        std::vector<std::vector<std::pair<int, int>>> coordOffsets
+        std::vector<std::vector<std::vector<int>>> coordOffsets
     );
 };
 
@@ -25,7 +24,7 @@ struct Piece
 {
     const PieceData& data;
     int centerRow, centerCol, orient;
-    std::vector<std::pair<int, int>> coords;
+    std::vector<std::vector<int>> coords;
 
     Piece();
     Piece(const PieceData& data);

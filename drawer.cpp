@@ -92,23 +92,23 @@ void BoardDrawer::drawPreview()
 {
     const PieceData& data  = game.nextPiece->data;
     int texture = blockTextures[pieceTexMap[data.index]];
-    int minWidth = data.coordOffsets[0][0].second; 
-    int maxWidth = data.coordOffsets[0][0].second; 
-    int minHeight = data.coordOffsets[0][0].first;  
-    int maxHeight = data.coordOffsets[0][0].first; 
+    int minWidth = data.coordOffsets[0][0][1]; 
+    int maxWidth = data.coordOffsets[0][0][1]; 
+    int minHeight = data.coordOffsets[0][0][0];  
+    int maxHeight = data.coordOffsets[0][0][0]; 
 
     for (auto& rowCol : data.coordOffsets[0]) {
-        if (rowCol.first < minHeight) {
-            minHeight = rowCol.first;
+        if (rowCol[0] < minHeight) {
+            minHeight = rowCol[0];
         }
-        if (rowCol.first > maxHeight) {
-            maxHeight = rowCol.first;
+        if (rowCol[0] > maxHeight) {
+            maxHeight = rowCol[0];
         }
-        if (rowCol.second < minWidth) {
-            minWidth = rowCol.second;
+        if (rowCol[1] < minWidth) {
+            minWidth = rowCol[1];
         }
-        if (rowCol.second > maxWidth) {
-            maxWidth = rowCol.second;
+        if (rowCol[1] > maxWidth) {
+            maxWidth = rowCol[1];
         }
     }
     float spacing = (previewPos[2] - previewPos[0]) / 4;
@@ -122,10 +122,10 @@ void BoardDrawer::drawPreview()
     float widthOffset = targetWidth - cornerWidth;
 
     for (auto& rowCol : data.coordOffsets[0]) {
-        const float x0 = rowCol.second*spacing + widthOffset;
-        const float x1 = (rowCol.second + 1)*spacing + widthOffset;
-        const float y0 = -rowCol.first*spacing + heightOffset;
-        const float y1 = -(rowCol.first + 1)*spacing + heightOffset;
+        const float x0 = rowCol[1]*spacing + widthOffset;
+        const float x1 = (rowCol[1] + 1)*spacing + widthOffset;
+        const float y0 = -rowCol[0]*spacing + heightOffset;
+        const float y1 = -(rowCol[0] + 1)*spacing + heightOffset;
         std::vector<float> vertices = {
         x0, y1, 0,      0, 1,
         x1, y1, 0,      1, 1,
