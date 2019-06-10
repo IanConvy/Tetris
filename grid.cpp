@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <utility>
-#include <iostream>
 
 Grid::Grid(const int height, const int width) :
 height{height},

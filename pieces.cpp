@@ -2,11 +2,9 @@
 
 #include <vector>
 #include <string>
-#include <cassert>
 #include <utility>
 #include <map>
 #include <memory>
-#include <iostream>
 
 PieceData::PieceData(
     const unsigned int pieceIndex,
@@ -44,8 +42,6 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
     centerRow = newCenterRow;
     centerCol = newCenterCol;
     orient = newOrient;
-    assert(orient < data.numOrients);
-    assert(data.coordOffsets[orient].size() == coords.size());
     for (int i = 0; i < data.coordOffsets[orient].size(); ++i) {
         coords[i].first = centerRow + data.coordOffsets[orient][i].first;
         coords[i].second = centerCol + data.coordOffsets[orient][i].second;
@@ -55,7 +51,6 @@ void Piece::setPosition(int newCenterRow, int newCenterCol, unsigned int newOrie
 void Piece::rotate(int turns)
 {
     int newOrient = (data.numOrients + (orient + turns) % data.numOrients) % data.numOrients;
-    assert(newOrient >= 0 && newOrient < data.numOrients);
     setPosition(centerRow, centerCol, newOrient);
 }
 

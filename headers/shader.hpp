@@ -1,6 +1,6 @@
 #define GLEW_STATIC
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef SHADER
+#define SHADER
 
 #include <string>
 

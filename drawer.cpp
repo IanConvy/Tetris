@@ -4,14 +4,14 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <memory>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "headers/stb_image.hpp"
-#include "headers/shader_s.hpp"
+#include "headers/shader.hpp"
 #include "headers/pieces.hpp"
 #include "headers/text.hpp"
+#include "headers/nes.hpp"
 
 BoardDrawer::BoardDrawer(NESTetris& game) : 
 brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl"),

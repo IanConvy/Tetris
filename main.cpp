@@ -1,15 +1,12 @@
 #define GLEW_STATIC
 
-#include <iostream>
 #include <string>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "headers/drawer.hpp"
 #include "headers/inputs.hpp"
-#include "headers/pieces.hpp"
 #include "headers/nes.hpp"
-#include "headers/text.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);

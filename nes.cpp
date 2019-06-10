@@ -1,4 +1,5 @@
 #include "headers/nes.hpp"
+
 #include "headers/pieces.hpp"
 #include "headers/grid.hpp"
 
@@ -6,8 +7,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <iostream>
-#include <iomanip>
 
 NESTetris::NESTetris(int startLevel) :
 startLevel{startLevel},
@@ -208,7 +207,6 @@ void NESTetris::runActiveFrame()
         if (grid.collisionCheck(currPiece->coords)) {
             currPiece->translate(1, 0);
             setEntryDelay();
-            std::cout << constants["entryDelay"] << std::endl;
             flags["newPiece"] = true;
             writePiece();
             filledRows = grid.getFilledRows();

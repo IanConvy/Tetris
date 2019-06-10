@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <iostream>
 
 TextDrawer::TextDrawer() :
 charTexCoords{

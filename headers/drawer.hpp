@@ -1,14 +1,12 @@
 #define GLEW_STATIC
-#ifndef BOARD_DRAWER
-#define BOARD_DRAWER
+#ifndef DRAWER
+#define DRAWER
 
 #include "stb_image.hpp"
-#include "shader_s.hpp"
-#include "pieces.hpp"
+#include "shader.hpp"
 #include "text.hpp"
 #include "nes.hpp"
 #include <vector>
-#include <utility>
 #include <string>
 
 struct BoardDrawer
