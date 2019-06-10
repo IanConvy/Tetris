@@ -207,6 +207,8 @@ void NESTetris::runActiveFrame()
         currPiece->translate(-1, 0);
         if (grid.collisionCheck(currPiece->coords)) {
             currPiece->translate(1, 0);
+            setEntryDelay();
+            std::cout << constants["entryDelay"] << std::endl;
             flags["newPiece"] = true;
             writePiece();
             filledRows = grid.getFilledRows();
@@ -269,7 +271,6 @@ void NESTetris::setConstants()
     constants["dropGravity"] = 1;
     constants["dasLimit"] = 15;
     constants["dasFloor"] = 10;
-    constants["entryDelay"] = 18;
     constants["firstDelay"] = 96;
     constants["width"] = 10;
     constants["height"] = 20;
@@ -283,6 +284,14 @@ void NESTetris::setConstants()
     else if (dynamic["level"] > 9 && dynamic["level"] <= 18) constants["setGravity"] = 4 - (dynamic["level"]-10)/3;
     else if (dynamic["level"] > 18 && dynamic["level"] <= 28) constants["setGravity"] = 1;
     else if (dynamic["level"] > 28) constants["setGravity"] = 0;
+}
+
+void NESTetris::setEntryDelay()
+{
+    int row = currPiece->centerRow;
+    if (row <= 1) constants["entryDelay"] = 9;
+    else if (row > 1 && row < 18) constants["entryDelay"] = 11 + 2*((row - 2)/4);
+    else constants["entryDelay"] = 17;
 }
 
 void NESTetris::resetGame()

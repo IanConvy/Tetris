@@ -30,6 +30,7 @@ struct NESTetris
     void clearPiece();
     void updatePiece();
     void setConstants();
+    void setEntryDelay();
     void checkLevel();
     void resetGame();
 };
