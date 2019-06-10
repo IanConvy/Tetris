@@ -65,6 +65,7 @@ blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
 BoardDrawer::~BoardDrawer()
 {
     glDeleteTextures(1, &brdTexture);
+    glDeleteTextures(1, &fontTexture);
     glDeleteTextures(blockTextures.size(), &blockTextures[0]);
     glDeleteBuffers(1, &sqrBuffer);
     glDeleteBuffers(1, &sqrIndexBuffer);
