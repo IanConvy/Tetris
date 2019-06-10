@@ -29,10 +29,11 @@ int main(int argc, char* argv[])
         glewExperimental = GL_TRUE;
         glewInit();
 
-        const int startLevel = (argc > 1) ? std::stoi(argv[1]) : 0;
+        std::string location = argv[1];
+        const int startLevel = (argc > 1) ? std::stoi(argv[2]) : 0;
 
         NESTetris game{startLevel};
-        BoardDrawer drawer{game};
+        BoardDrawer drawer{location, game};
         InputHandler inputs{window, game.commands};
 
         double engTime = 0;

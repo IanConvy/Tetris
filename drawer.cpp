@@ -13,8 +13,10 @@
 #include "headers/text.hpp"
 #include "headers/nes.hpp"
 
-BoardDrawer::BoardDrawer(NESTetris& game) : 
-brdShader("shaders/v_shader.glsl", "shaders/f_shader.glsl"),
+BoardDrawer::BoardDrawer(std::string location, NESTetris& game) : 
+brdShader(
+    (location + std::string("/shaders/v_shader.glsl")).c_str(), 
+    (location + std::string("/shaders/f_shader.glsl")).c_str()),
 textDrawer{},
 game{game},
 brdVertices{
@@ -55,11 +57,11 @@ blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight}
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sqrIndexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sqrIndices.size() * sizeof(unsigned int), &sqrIndices[0], GL_STATIC_DRAW);
     
-    createTexture(brdTexture, "images/tetrisboard.png");
-    createTexture(fontTexture, "images/fontbitmap.png");
-    createTexture(blockTextures[0], "images/yellowblock.png");
-    createTexture(blockTextures[1], "images/redblock.png");
-    createTexture(blockTextures[2], "images/whiteblock.png");
+    createTexture(brdTexture, location + std::string("/images/tetrisboard.png"));
+    createTexture(fontTexture, location + std::string("/images/fontbitmap.png"));
+    createTexture(blockTextures[0], location + std::string("/images/yellowblock.png"));
+    createTexture(blockTextures[1], location + std::string("/images/redblock.png"));
+    createTexture(blockTextures[2], location + std::string("/images/whiteblock.png"));
 }
 
 BoardDrawer::~BoardDrawer()

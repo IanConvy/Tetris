@@ -24,7 +24,7 @@ struct BoardDrawer
     Shader brdShader;
     TextDrawer textDrawer;
     
-    BoardDrawer(NESTetris& game);
+    BoardDrawer(std::string location, NESTetris& game);
     ~BoardDrawer();
     void drawBoard();
     void drawSquare(const std::vector<float>& vertices, unsigned int texture);
