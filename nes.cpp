@@ -33,7 +33,8 @@ dynamic{
     {"score", 0},
     {"level", startLevel}},
 flags{
-    {"frozen", false}},
+    {"frozen", false},
+    {"afterFirst", false}},
 lineScore{760, 1900, 5700, 22800},
 lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
@@ -129,6 +130,9 @@ void NESTetris::runClearFrame()
 
 void NESTetris::runActiveFrame()
 {   
+    if (!flags["afterFirst"] && dynamic["totalFrames"] >= constants["firstDelay"]) {
+        flags["afterFirst"] = true;
+    }
     clearPiece();
     // DAS Clear:
     if (commands["clearDAS"]) {
@@ -193,11 +197,12 @@ void NESTetris::runActiveFrame()
     // Gravity:
     if (commands["softDrop"]) {
         dynamic["gravity"] = constants["dropGravity"];
+        flags["afterFirst"] = true;
     }
     else {
         dynamic["gravity"] = constants["setGravity"];
     }
-    if (dynamic["totalFrames"] >= constants["firstDelay"] && dynamic["dropFrames"] >= dynamic["gravity"]) {
+    if (flags["afterFirst"] && dynamic["dropFrames"] >= dynamic["gravity"]) {
         dynamic["dropFrames"] = 0;
         currPiece->translate(-1, 0);
         if (grid.collisionCheck(currPiece->coords)) {
@@ -303,7 +308,8 @@ void NESTetris::resetGame()
         {"score", 0},
         {"level", startLevel}};
     flags = {
-        {"frozen", false}};
+        {"frozen", false},
+        {"afterFirst", false}};
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
     grid.reset();
