@@ -323,7 +323,7 @@ void NESTetris::resetGame()
     currPiece = pieceGen.getRandomPiece();
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
-    dynamic["gravity"] = constants["setGravity"];
+    setConstants();
 }
 
 void resetBool(std::map<const std::string, bool>& bools)
