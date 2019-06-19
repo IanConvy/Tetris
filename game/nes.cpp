@@ -11,30 +11,10 @@
 NESTetris::NESTetris(int startLevel) :
 startLevel{startLevel},
 firstThreshold{0},
-commands{
-    {"doCCW", false},
-    {"doCW", false},
-    {"doLeft", false},
-    {"doRight", false},
-    {"softDrop", false},
-    {"leftDAS", false},
-    {"rightDAS", false},
-    {"clearDAS", false},
-    {"reset", false}},
-dynamic{
-    {"dropFrames", 0},
-    {"gravity", 0},
-    {"dasFrames", 0},
-    {"frozenFrames", 0},
-    {"clearFrames", 0},
-    {"totalFrames", 0},
-    {"lineCount", 0},
-    {"score", 0},
-    {"level", startLevel}},
-flags{
-    {"frozen", false},
-    {"afterFirst", false}},
-lineScore{760, 1900, 5700, 22800},
+commands{},
+dynamic{},
+flags{},
+lineScore{0, 0, 0, 0},
 lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
 nextPiece{nullptr},
@@ -42,16 +22,46 @@ filledRows{},
 grid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {
-    setConstants();
-    currPiece = pieceGen.getRandomPiece();
-    nextPiece = pieceGen.getRandomPiece();
-    currPiece->setPosition(19, 5, 0);
-    dynamic["gravity"] = constants["setGravity"];
-    writePiece();
     if (startLevel <= 9) firstThreshold = 10*(startLevel + 1);
     else if (startLevel > 9 && startLevel <= 15) firstThreshold = 100;
     else firstThreshold = 10*(startLevel - 5);
+    resetGame();
 };
+
+void NESTetris::resetGame()
+{
+    commands = {
+        {"doCCW", false},
+        {"doCW", false},
+        {"doLeft", false},
+        {"doRight", false},
+        {"softDrop", false},
+        {"leftDAS", false},
+        {"rightDAS", false},
+        {"clearDAS", false},
+        {"reset", false}};
+    dynamic = {
+        {"dropFrames", 0},
+        {"gravity", 0},
+        {"dasFrames", 0},
+        {"frozenFrames", 0},
+        {"clearFrames", 0},
+        {"totalFrames", 0},
+        {"lineCount", 0},
+        {"score", 0},
+        {"level", startLevel}};
+    flags = {
+        {"frozen", false},
+        {"afterFirst", false}};
+    lineTypeCount = {0, 0, 0, 0};
+    filledRows.clear();
+    grid.reset();
+    currPiece = pieceGen.getRandomPiece();
+    nextPiece = pieceGen.getRandomPiece();
+    currPiece->setPosition(19, 5, 0);
+    setConstants();
+    dynamic["gravity"] = constants["setGravity"];
+}
 
 void NESTetris::runFrame()
 {
@@ -282,40 +292,6 @@ void NESTetris::setEntryDelay()
     if (row <= 1) constants["entryDelay"] = 9;
     else if (row > 1 && row < 18) constants["entryDelay"] = 11 + 2*((row - 2)/4);
     else constants["entryDelay"] = 17;
-}
-
-void NESTetris::resetGame()
-{
-    commands = {
-        {"doCCW", false},
-        {"doCW", false},
-        {"doLeft", false},
-        {"doRight", false},
-        {"softDrop", false},
-        {"leftDAS", false},
-        {"rightDAS", false},
-        {"clearDAS", false},
-        {"reset", false}};
-    dynamic = {
-        {"dropFrames", 0},
-        {"gravity", 0},
-        {"dasFrames", 0},
-        {"frozenFrames", 0},
-        {"clearFrames", 0},
-        {"totalFrames", 0},
-        {"lineCount", 0},
-        {"score", 0},
-        {"level", startLevel}};
-    flags = {
-        {"frozen", false},
-        {"afterFirst", false}};
-    lineTypeCount = {0, 0, 0, 0};
-    filledRows.clear();
-    grid.reset();
-    currPiece = pieceGen.getRandomPiece();
-    nextPiece = pieceGen.getRandomPiece();
-    currPiece->setPosition(19, 5, 0);
-    setConstants();
 }
 
 void resetBool(std::map<const std::string, bool>& bools)
