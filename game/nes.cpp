@@ -233,20 +233,12 @@ void NESTetris::runActiveFrame()
 
 void NESTetris::writePiece()
 {
-    for (auto& colRow : currPiece->coords) {
-        if (grid.inBounds(colRow[0], colRow[1])) {
-            grid.fill(colRow[0], colRow[1], currPiece->data.index);
-        }
-    }
+    grid.fillSet(currPiece->coords, currPiece->data.index);
 }
 
 void NESTetris::clearPiece()
 {
-    for (auto& colRow : currPiece->coords) {
-        if (grid.inBounds(colRow[0], colRow[1])) {
-            grid.fill(colRow[0], colRow[1], 0);
-        }
-    }
+    grid.clearSet(currPiece->coords);
 }
 
 void NESTetris::updatePiece()

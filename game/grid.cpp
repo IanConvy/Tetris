@@ -14,9 +14,29 @@ int Grid::get(const int row, const int col)
     return grid[width*row + col];
 }
 
-void Grid::fill(const int row, const int col, const int index)
+void Grid::fillSet(std::vector<std::vector<int>>& coords, unsigned int index)
 {
-    grid[width*row + col] = index;
+    for (auto& rowCol : coords) {
+        if (inBounds(rowCol[0], rowCol[1])) {
+            grid[width*rowCol[0] + rowCol[1]] = index;
+        }
+    }  
+}
+
+void Grid::clearSet(std::vector<std::vector<int>>& coords)
+{
+    for (auto& rowCol : coords) {
+        if (inBounds(rowCol[0], rowCol[1])) {
+            grid[width*rowCol[0] + rowCol[1]] = 0;
+        }
+    }
+}
+
+void Grid::fill(int row, int col, unsigned int index)
+{
+    if (inBounds(row, col)) {
+        grid[width*row + col] = index;
+    }
 }
 
 void Grid::swapGrids()

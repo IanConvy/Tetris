@@ -10,7 +10,9 @@ struct Grid
 
     Grid(const int height, const int width);
     bool collisionCheck(std::vector<std::vector<int>> coords);
-    void fill(const int row, const int col, const int index);
+    void fillSet(std::vector<std::vector<int>>& coords, unsigned int index);
+    void clearSet(std::vector<std::vector<int>>& coords);
+    void fill(int row, int col, unsigned int index);
     int get(const int row, const int col);
     void clearRows(const std::vector<int>& filledRows, bool buffer = false);
     void swapGrids();
