@@ -1,13 +1,15 @@
+#include "headers/tools.hpp"
+
 #include <vector>
 #include <cmath>
 #include <iostream>
 
-std::vector<int> getHeights(int height, int width, std::vector<int> grid)
+std::vector<int> getHeights(int height, int width, std::vector<int>& grid)
 {
     std::vector<int> heights;
-    for (int row = 0; row < height; ++row) {
+    for (int col = 0; col < width; ++col) {
         int currHeight = 0;
-        for (auto itr = grid.begin() + row; *itr != 0 && currHeight < height; itr += width) {
+        for (auto itr = grid.begin() + col; *itr != 0 && currHeight < height; itr += width) {
             ++currHeight;
         }
         heights.push_back(currHeight);
@@ -15,7 +17,7 @@ std::vector<int> getHeights(int height, int width, std::vector<int> grid)
     return heights;
 }
 
-int getRoughness(int height, int width, std::vector<int> grid)
+int getRoughness(int height, int width, std::vector<int>& grid)
 {
     auto heights = getHeights(height, width, grid);
     int roughness = 0;
@@ -25,11 +27,15 @@ int getRoughness(int height, int width, std::vector<int> grid)
     return roughness;
 }
 
-int main() {
-    std::vector<int> test{
-        1, 1, 1, 0,
-        0, 1, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 0, 0};
-    std::cout << getRoughness(4, 4, test) << std::endl;
+void printGrid(int height, int width, std::vector<int>& grid)
+{
+    for (int row = height - 1; row >= 0; --row) {
+        auto itr = grid.begin() + width*row;
+        for (int col = 0; col < width; ++col) {
+            std::cout << *itr << " ";
+            ++itr;
+        } 
+        std::cout << "\n";
+    }
+    std::cout << std::flush;
 }
