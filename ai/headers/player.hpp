@@ -13,6 +13,7 @@ struct Player
     std::unique_ptr<Piece> currPiece, nextPiece;
 
     Player();
+    void sweepPiece(std::vector<std::vector<int>>& holder);
     void placePiece(int centerCol, int orient);
 };
 #endif

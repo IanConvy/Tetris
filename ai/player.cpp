@@ -35,4 +35,19 @@ void Player::placePiece(int centerCol, int orient)
     }
 }
 
+void Player::sweepPiece(std::vector<std::vector<int>>& holder)
+{
+    auto origGrid = grid.grid;
+    for (unsigned int orient = 0; orient < currPiece->data.coordOffsets.size(); ++orient) {
+        for (int col = 0; col < grid.width; ++col) {
+            currPiece->setPosition(grid.height - 1, col, orient);
+            if (!grid.collisionCheck(currPiece->coords)) {
+                placePiece(col, orient);
+                holder.push_back(grid.grid);
+                grid.grid = origGrid;
+            }
+        }
+    }
+}
+
 

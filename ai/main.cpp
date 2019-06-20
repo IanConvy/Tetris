@@ -2,11 +2,15 @@
 #include "headers/tools.hpp"
 
 #include <iostream>
+#include <vector>
 
 int main()
 {
     Player player;
-    std::cout << player.currPiece->data.index << std::endl;
-    player.placePiece(4, 0);
-    printGrid(20, 10, player.grid.grid);
+    std::vector<std::vector<int>> grids;
+    player.sweepPiece(grids);
+    for (auto grid : grids) {
+        printGrid(20, 10, grid);
+        std::cin.ignore();
+    }
 }
