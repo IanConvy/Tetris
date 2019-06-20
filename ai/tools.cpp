@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-std::vector<int> getHeights(int height, int width, std::vector<int>& grid)
+std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid)
 {
     std::vector<int> heights;
     for (int col = 0; col < width; ++col) {
@@ -17,14 +17,42 @@ std::vector<int> getHeights(int height, int width, std::vector<int>& grid)
     return heights;
 }
 
-int getRoughness(int height, int width, std::vector<int>& grid)
+std::vector<int> getUpperHeights(int height, int width, std::vector<int>& grid)
 {
-    auto heights = getHeights(height, width, grid);
+    std::vector<int> heights;
+    for (int col = 0; col < width; ++col) {
+        int currHeight = height - 1;
+        for (auto itr = grid.end() - width  + col; *itr == 0 && currHeight >= 0; itr -= width) {
+            --currHeight;
+        }
+        heights.push_back(currHeight + 1);
+    }
+    return heights;
+}
+
+int getRoughness(std::vector<int>& upperHeights)
+{
     int roughness = 0;
-    for (auto itr = heights.begin() + 1; itr != heights.end(); ++itr) {
+    for (auto itr = upperHeights.begin() + 1; itr != upperHeights.end(); ++itr) {
         roughness += std::abs(*itr - *(itr - 1));
     }
     return roughness;
+}
+
+int getHoles(std::vector<int>& lowerHeights, std::vector<int>& upperHeights, std::vector<int>& grid)
+{
+    int holes = 0;
+    int width = lowerHeights.size();
+    for (int col = 0; col < width; ++col) {
+        auto startItr = grid.begin() + width*lowerHeights[col] + col;
+        auto endItr = grid.begin() + width*upperHeights[col] + col;
+        for (; startItr != endItr; startItr += width) {
+            if (*startItr == 0) {
+                ++holes;
+            }
+        }
+    }
+    return holes;
 }
 
 void printGrid(int height, int width, std::vector<int>& grid)
