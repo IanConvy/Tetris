@@ -30,29 +30,29 @@ pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPie
 
 void NESTetris::resetGame()
 {
-    commands = {
-        {"doCCW", false},
-        {"doCW", false},
-        {"doLeft", false},
-        {"doRight", false},
-        {"softDrop", false},
-        {"leftDAS", false},
-        {"rightDAS", false},
-        {"clearDAS", false},
-        {"reset", false}};
-    dynamic = {
-        {"dropFrames", 0},
-        {"gravity", 0},
-        {"dasFrames", 0},
-        {"frozenFrames", 0},
-        {"clearFrames", 0},
-        {"totalFrames", 0},
-        {"lineCount", 0},
-        {"score", 0},
-        {"level", startLevel}};
-    flags = {
-        {"frozen", false},
-        {"afterFirst", false}};
+    commands["doCCW"] =  false;
+    commands["doCW"] = false;
+    commands["doLeft"] = false;
+    commands["doRight"] =  false;
+    commands["softDrop"] =  false;
+    commands["leftDAS"] = false;
+    commands["rightDAS"] = false;
+    commands["clearDAS"] = false;
+    commands["reset"] = false;
+
+    dynamic["dropFrames"] = 0;
+    dynamic["gravity"] = 0;
+    dynamic["dasFrames"] = 0;
+    dynamic["frozenFrames"] = 0;
+    dynamic["clearFrames"] = 0;
+    dynamic["totalFrames"] = 0;
+    dynamic["lineCount"] =  0;
+    dynamic["score"] =  0;
+    dynamic["level"] = startLevel;
+
+    flags["frozen"] = false;
+    flags["afterFirst"] = false;
+    
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
     grid.reset();

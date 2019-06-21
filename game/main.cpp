@@ -33,7 +33,13 @@ int main(int argc, char* argv[])
         const int startLevel = (argc > 1) ? std::stoi(argv[2]) : 0;
 
         NESTetris game{startLevel};
-        BoardDrawer drawer{location, game};
+        BoardDrawer drawer{location};
+        drawer.assignGrid(game.grid);
+        drawer.assignLevel(game.dynamic["level"]);
+        drawer.assignLineCount(game.dynamic["lineCount"]);
+        drawer.assignlineTypeCount(game.lineTypeCount);
+        drawer.assignNextPiece(game.nextPiece);
+        drawer.assignScore(game.dynamic["score"]);
         InputHandler inputs{window, game.commands};
 
         double engTime = 0;

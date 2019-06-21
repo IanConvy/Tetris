@@ -2,12 +2,14 @@
 #ifndef DRAWER
 #define DRAWER
 
+#include "grid.hpp"
+#include "pieces.hpp"
 #include "stb_image.hpp"
 #include "shader.hpp"
 #include "text.hpp"
-#include "nes.hpp"
 #include <vector>
 #include <string>
+#include <memory>
 
 struct BoardDrawer
 {
@@ -20,11 +22,16 @@ struct BoardDrawer
     std::vector<unsigned int> blockTextures;
     const std::vector<unsigned int> pieceTexMap;
     const float blockWidthSpacing, blockHeightSpacing; // Requires playFieldPos for initialization 
-    NESTetris& game;
+    std::unique_ptr<Piece>* nextPieceSource;
+    Grid* gridSource;
+    int* lineCountSource;
+    int* scoreSource;
+    int* levelSource;
+    std::vector<int>* lineTypeCountSource;
     Shader brdShader;
     TextDrawer textDrawer;
     
-    BoardDrawer(std::string location, NESTetris& game);
+    BoardDrawer(std::string location);
     ~BoardDrawer();
     void drawBoard();
     void drawSquare(const std::vector<float>& vertices, unsigned int texture);
@@ -35,6 +42,12 @@ struct BoardDrawer
     void drawScore();
     void drawLevel();
     void drawFrame();
+    void assignNextPiece(std::unique_ptr<Piece>& piecePtr);
+    void assignGrid(Grid& grid);
+    void assignLineCount(int& lineCount);
+    void assignScore(int& score);
+    void assignLevel(int& level);
+    void assignlineTypeCount(std::vector<int>& typecounts);
 };
 
 void createTexture(unsigned int& texID, std::string filePath);
