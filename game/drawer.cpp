@@ -181,37 +181,43 @@ void BoardDrawer::drawLineCount()
 
 void BoardDrawer::drawLineTypeCount()
 {
-    int type = 0;
-    std::vector<std::string> typeLabels{"single - ", "double - ", "triple - ", "tetris - "};
-    for (const auto& typeCount : *lineTypeCountSource) {
-        std::string countRaw = std::to_string(typeCount);
-        std::string countStr = typeLabels[type] + 
-            (countRaw.size() < 3 ? std::string(3 - countRaw.size(), '0') + countRaw : countRaw);
-        auto textVertices = textDrawer.getTextVertices(countStr, 68, 333, 630 + 50*type, 630 + 50*type + 18);
-        for (auto& charVertices : textVertices) {
-            drawSquare(charVertices, fontTexture);
+    if (lineTypeCountSource != nullptr) {
+        int type = 0;
+        std::vector<std::string> typeLabels{"single - ", "double - ", "triple - ", "tetris - "};
+        for (const auto& typeCount : *lineTypeCountSource) {
+            std::string countRaw = std::to_string(typeCount);
+            std::string countStr = typeLabels[type] + 
+                (countRaw.size() < 3 ? std::string(3 - countRaw.size(), '0') + countRaw : countRaw);
+            auto textVertices = textDrawer.getTextVertices(countStr, 68, 333, 630 + 50*type, 630 + 50*type + 18);
+            for (auto& charVertices : textVertices) {
+                drawSquare(charVertices, fontTexture);
+            }
+            ++type;
         }
-        ++type;
     }
 }
 
 void BoardDrawer::drawScore()
 {
-    std::string scoreRaw = std::to_string(*scoreSource);
-    std::string scoreStr = scoreRaw.size() < 6 ? std::string(6 - scoreRaw.size(), '0') + scoreRaw : scoreRaw;
-    auto textVertices = textDrawer.getTextVertices(scoreStr, 774, 980, 258, 286);
-    for (auto& charVertices : textVertices) {
-        drawSquare(charVertices, fontTexture);
+    if (scoreSource != nullptr) {
+        std::string scoreRaw = std::to_string(*scoreSource);
+        std::string scoreStr = scoreRaw.size() < 6 ? std::string(6 - scoreRaw.size(), '0') + scoreRaw : scoreRaw;
+        auto textVertices = textDrawer.getTextVertices(scoreStr, 774, 980, 258, 286);
+        for (auto& charVertices : textVertices) {
+            drawSquare(charVertices, fontTexture);
+        }
     }
 }
 
 void BoardDrawer::drawLevel()
 {
-    std::string levelRaw = std::to_string(*levelSource);
-    std::string levelStr = levelRaw.size() < 2 ? std::string(2 - levelRaw.size(), '0') + levelRaw : levelRaw;
-    auto textVertices = textDrawer.getTextVertices(levelStr, 843, 902, 642, 671);
-    for (auto& charVertices : textVertices) {
-        drawSquare(charVertices, fontTexture);
+    if (levelSource != nullptr) {
+        std::string levelRaw = std::to_string(*levelSource);
+        std::string levelStr = levelRaw.size() < 2 ? std::string(2 - levelRaw.size(), '0') + levelRaw : levelRaw;
+        auto textVertices = textDrawer.getTextVertices(levelStr, 843, 902, 642, 671);
+        for (auto& charVertices : textVertices) {
+            drawSquare(charVertices, fontTexture);
+        }
     }
 }
 
