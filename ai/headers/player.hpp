@@ -9,9 +9,12 @@
 
 struct Player
 {
-    PieceGenerator pieceGen;
     Grid grid;
+    PieceGenerator pieceGen;
     std::unique_ptr<Piece> currPiece, nextPiece;
+    int score;
+    int lineCount;
+    std::vector<int> lineTypeCount;
 
     Player();
     void sweepPiece(std::vector<std::vector<int>>& holder);

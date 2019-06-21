@@ -11,7 +11,10 @@ Player::Player() :
 grid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
 currPiece{nullptr},
-nextPiece{nullptr}
+nextPiece{nullptr},
+score{0},
+lineCount{0},
+lineTypeCount{0, 0, 0, 0}
 {
     Piece firstPiece = Piece(allPieces.find("tPiece")->second);
     firstPiece.setPosition(0, 4, 2);
@@ -51,6 +54,7 @@ void Player::sweepPiece(std::vector<std::vector<int>>& holder)
             if (!grid.collisionCheck(currPiece->coords)) {
                 placePiece(col, orient);
                 auto filledRows = grid.getFilledRows();
+                lineCount += filledRows.size();
                 if (!filledRows.empty()) {
                     grid.clearRows(filledRows);
                 }
