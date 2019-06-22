@@ -45,59 +45,100 @@ void Player::placePiece(int centerCol, int orient)
     }
 }
 
-void Player::sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<std::vector<int>>& moveHolder)
+std::vector<int> Player::getBestMove()
 {
+    std::vector<std::vector<int>> moves;
     auto origGrid = grid.grid;
+    auto origLineCount = lineCount;
+    auto origLineCountType = lineTypeCount;
+    float bestEval = -10000;
+    int bestIndex = 0;
+    int i = 0;
     for (int orient = 0; orient < currPiece->data.coordOffsets.size(); ++orient) {
         for (int col = 0; col < grid.width; ++col) {
             currPiece->setPosition(grid.height - 1, col, orient);
             if (!grid.collisionCheck(currPiece->coords)) {
                 placePiece(col, orient);
                 auto filledRows = grid.getFilledRows();
+                lineCount += filledRows.size();
                 if (!filledRows.empty()) {
                     grid.clearRows(filledRows);
+                    ++lineTypeCount[filledRows.size() - 1];
                 }
-                gridHolder.push_back(grid.grid);
-                moveHolder.push_back({currPiece->centerRow, col, orient});
+                moves.push_back({currPiece->centerRow, col, orient});
+                float eval = evaluateGrid(grid.grid, false);
+                if (eval > bestEval) {
+                    bestEval = eval;
+                    bestIndex = i;
+                }
                 grid.grid = origGrid;
+                lineCount = origLineCount;
+                lineTypeCount = origLineCountType;
+                ++i;
             }
         }
     }
+    if (!moves.empty()) {
+        return moves[bestIndex];
+    }
+    else {
+        return std::vector<int>{};
+    }
 }
 
-int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
+float Player::evaluateGrid(std::vector<int>& moveGrid, bool print = false)
 {
-    int bestEval = -10000;
-    int bestIndex = 0;
-    int i = 0;
-    for (auto moveGrid : moveGrids) {
-        auto lowerHeight = getLowerHeights(grid.height, grid.width, moveGrid);
-        auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
-        auto holes = getHoles(lowerHeight, upperHeight, moveGrid);
-        auto roughness = getRoughness(upperHeight);
-        auto heightSum = 0;
-        for (auto height : upperHeight) {
-            heightSum += height;
-        } 
+    auto lowerHeight = getLowerHeights(grid.height, grid.width, moveGrid);
+    auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
+    float holes = getHoles(lowerHeight, upperHeight, moveGrid);
+    float roughness = getRoughness(upperHeight);
 
-        int eval = -(100*holes + roughness);
-        if (eval > bestEval) {
-            bestEval = eval;
-            bestIndex = i;
+    float heightMin = 20;
+    for (auto itr = lowerHeight.begin(); itr != lowerHeight.end() - 1; ++itr) {
+        if (*itr < heightMin) {
+            heightMin = *itr;
         }
-        ++i;
     }
-    return bestIndex;
+    float heightMax = 0;
+    for (auto itr = upperHeight.begin(); itr != upperHeight.end(); ++itr) {
+        if (*itr > heightMax) {
+            heightMax = *itr;
+        }
+    }
+    float minHeightScore = (heightMin < 5) ? heightMin : 5;
+    float maxHeightScore = (heightMax > 10) ? heightMax - 10 : 0;
+
+    float holeCoeff = -5;
+    float roughCoeff = -0.25;
+    float minHeightCoeff = 1;
+    float maxHeightCoeff = -1;
+    float tetrisCoeff = 10;
+
+    float eval = 
+        holeCoeff*holes + 
+        roughCoeff*roughness + 
+        minHeightCoeff*minHeightScore + 
+        maxHeightCoeff*maxHeightScore +
+        tetrisCoeff*lineTypeCount[3];
+
+    if (print) {
+        std::cout << "\nEvaluation: "
+            << "   \nHole Score: " << holeCoeff*holes
+            << "   \nRoughness Score: " << roughCoeff*roughness
+            << "   \nMinHeight Score: " << minHeightCoeff*minHeightScore
+            << "   \nMaxHeight Score: " << maxHeightCoeff*maxHeightScore
+            << "   \nTetris Score: " << tetrisCoeff*lineTypeCount[3]
+            << "   \nScore: " << eval - tetrisCoeff*lineTypeCount[3]
+            << std::endl; 
+    }
+    return eval;
 }
 
 bool Player::bestMove()
 {
     bool topout = false;
-    std::vector<std::vector<int>> grids, moves;
-    sweepPiece(grids, moves);
-    if (!grids.empty()) {
-        auto bestMoveIndex = evaluateMoves(grids);
-        auto rowColOrient = moves[bestMoveIndex];
+    auto rowColOrient = getBestMove();
+    if (!rowColOrient.empty()) {
         currPiece->setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
         grid.fillSet(currPiece->coords, currPiece->data.index);
         auto filledRows = grid.getFilledRows();

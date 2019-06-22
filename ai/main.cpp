@@ -16,13 +16,14 @@ void runDisplay(std::string location);
 
 int main(int argc, char* argv[])
 {
-    bool display = (argc > 2 && std::string(argv[2]) == std::string("display")) ? true : false; 
+    bool display = (argc > 2 && std::string(argv[2]) == std::string("display")) ? true : false;
+    float numRuns = (argc > 2 && display == false) ? numRuns = std::stoi(argv[2]) : 100; 
 
     if (display) {
         runDisplay(argv[1]);
     }
     else {
-        runBulk(100);
+        runBulk(numRuns);
     }
 }
 
@@ -84,6 +85,7 @@ void runDisplay(std::string location)
             if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && held == false) {
                 held = true;
                 topout = player.bestMove();
+                player.evaluateGrid(player.grid.grid, true);
                 drawer.drawFrame();
                 glfwSwapBuffers(window);
             }
