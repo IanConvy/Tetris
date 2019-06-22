@@ -11,8 +11,47 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void runBulk(float numRuns);
+void runDisplay(std::string location);
 
 int main(int argc, char* argv[])
+{
+    bool display = (argc > 2 && std::string(argv[2]) == std::string("display")) ? true : false; 
+
+    if (display) {
+        runDisplay(argv[1]);
+    }
+    else {
+        runBulk(100);
+    }
+}
+
+void runBulk(float numRuns)
+{
+    int totalLineCount = 0;
+    std::vector<int> totalLineTypeCount = {0, 0, 0, 0};
+    for (int runs = 0; runs < numRuns; ++runs) {
+        std::cout << "\r" << runs << std::flush;
+        Player player;
+        bool topout = false;
+        while (!topout) {
+            topout = player.bestMove();
+        }
+        totalLineCount += player.lineCount;
+        for (int i = 0; i < player.lineTypeCount.size(); ++i) {
+            totalLineTypeCount[i] += player.lineTypeCount[i];
+        }
+    }
+    std::cout << "\nAverage Line Count: " << totalLineCount / numRuns
+        << "\nAverage Line Type Count: "
+            << "\n   Single: " << totalLineTypeCount[0] / numRuns
+            << "\n   Double: " << totalLineTypeCount[1] / numRuns
+            << "\n   Triple: " << totalLineTypeCount[2] / numRuns
+            << "\n   Tetris: " << totalLineTypeCount[3] / numRuns
+        << std::endl;
+}
+
+void runDisplay(std::string location)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -29,8 +68,6 @@ int main(int argc, char* argv[])
         glfwMakeContextCurrent(window);
         glewExperimental = GL_TRUE;
         glewInit();
-
-        std::string location = argv[1];
 
         Player player;
         BoardDrawer drawer{location};
@@ -56,7 +93,6 @@ int main(int argc, char* argv[])
         }
     }    
     glfwTerminate();
-    return 0;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)

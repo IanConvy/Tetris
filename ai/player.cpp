@@ -75,6 +75,11 @@ int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
         auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
         auto holes = getHoles(lowerHeight, upperHeight, moveGrid);
         auto roughness = getRoughness(upperHeight);
+        auto heightSum = 0;
+        for (auto height : upperHeight) {
+            heightSum += height;
+        } 
+
         int eval = -(100*holes + roughness);
         if (eval > bestEval) {
             bestEval = eval;
@@ -104,6 +109,9 @@ bool Player::bestMove()
         newPiece();
     }
     else {
+        topout = true;
+    }
+    if (lineCount > 230) {
         topout = true;
     }
     return topout;
