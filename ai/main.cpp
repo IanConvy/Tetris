@@ -44,7 +44,6 @@ void runBulk(float numRuns)
         }
     }
     std::cout << "\nAverage Line Count: " << totalLineCount / numRuns
-        << "\nAverage Line Type Count: "
             << "\n   Single: " << totalLineTypeCount[0] / numRuns
             << "\n   Double: " << totalLineTypeCount[1] / numRuns
             << "\n   Triple: " << totalLineTypeCount[2] / numRuns

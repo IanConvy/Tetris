@@ -107,28 +107,32 @@ float Player::evaluateGrid(std::vector<int>& moveGrid, bool print = false)
     }
     float minHeightScore = (heightMin < 5) ? heightMin : 5;
     float maxHeightScore = (heightMax > 10) ? heightMax - 10 : 0;
+    float nonTetris = lineTypeCount[0] + lineTypeCount[1] + lineTypeCount[2];
 
     float holeCoeff = -5;
     float roughCoeff = -0.25;
     float minHeightCoeff = 1;
     float maxHeightCoeff = -1;
     float tetrisCoeff = 10;
+    float lineCoeff = -1;
 
     float eval = 
         holeCoeff*holes + 
         roughCoeff*roughness + 
         minHeightCoeff*minHeightScore + 
         maxHeightCoeff*maxHeightScore +
+        lineCoeff*nonTetris + 
         tetrisCoeff*lineTypeCount[3];
 
     if (print) {
         std::cout << "\nEvaluation: "
-            << "   \nHole Score: " << holeCoeff*holes
-            << "   \nRoughness Score: " << roughCoeff*roughness
-            << "   \nMinHeight Score: " << minHeightCoeff*minHeightScore
-            << "   \nMaxHeight Score: " << maxHeightCoeff*maxHeightScore
-            << "   \nTetris Score: " << tetrisCoeff*lineTypeCount[3]
-            << "   \nScore: " << eval - tetrisCoeff*lineTypeCount[3]
+            << "\n   Hole Score: " << holeCoeff*holes
+            << "\n   Roughness Score: " << roughCoeff*roughness
+            << "\n   MinHeight Score: " << minHeightCoeff*minHeightScore
+            << "\n   MaxHeight Score: " << maxHeightCoeff*maxHeightScore
+            << "\n   Line Score: " << lineCoeff*nonTetris
+            << "\n   Tetris Score: " << tetrisCoeff*lineTypeCount[3]
+            << "\n   Score: " << eval - tetrisCoeff*lineTypeCount[3] - lineCoeff*nonTetris
             << std::endl; 
     }
     return eval;
