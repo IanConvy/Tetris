@@ -32,7 +32,9 @@ int main(int argc, char* argv[])
         std::string location = argv[1];
         const int startLevel = (argc > 1) ? std::stoi(argv[2]) : 0;
 
+        InputHandler inputs{window};
         NESTetris game{startLevel};
+        game.assignInputs(inputs.pressed);
         BoardDrawer drawer{location};
         drawer.assignGrid(game.grid);
         drawer.assignLevel(game.dynamic["level"]);
@@ -40,7 +42,6 @@ int main(int argc, char* argv[])
         drawer.assignlineTypeCount(game.lineTypeCount);
         drawer.assignNextPiece(game.nextPiece);
         drawer.assignScore(game.dynamic["score"]);
-        InputHandler inputs{window, game.commands};
 
         double engTime = 0;
         double rendTime = 0;
@@ -50,7 +51,6 @@ int main(int argc, char* argv[])
         while (!glfwWindowShouldClose(window)) {
             double newTime = glfwGetTime();
             if (newTime - engTime >= engSecs) {
-                inputs.setCommands();
                 game.runFrame();
                 engTime = newTime;  
             }

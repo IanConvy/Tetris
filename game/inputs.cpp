@@ -9,7 +9,7 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
-InputHandler::InputHandler(GLFWwindow* window, std::map<const std::string, bool>& commands) :
+InputHandler::InputHandler(GLFWwindow* window) :
 keyPress{0, 0, 0, 0, 0},
 callPtr{keyCallBack},
 pressed{
@@ -24,71 +24,10 @@ flags{
     {"sHeld", false},
     {"leftHeld", false},
     {"rightHeld", false},
-    {"escHeld", false}},
-commands{commands}
+    {"escHeld", false}}
 {
     glfwSetKeyCallback(window, callPtr);
     glfwSetWindowUserPointer(window, this);
-}
-
-void InputHandler::setCommands()
-{   // A key:
-    if (pressed["a"] && !flags["aHeld"] && !flags["sHeld"]) {
-        commands["doCCW"] = true;
-        flags["aHeld"] = true;
-    }
-    if (!pressed["a"]) {
-        flags["aHeld"] = false;
-    }
-    // S key:
-    if (pressed["s"] && !flags["sHeld"] && !flags["aHeld"]) {
-        commands["doCW"] = true;
-        flags["sHeld"] = true;
-    }
-    if (!pressed["s"]) {
-        flags["sHeld"] = false;
-    }
-    // Left key:
-    if (pressed["left"] && flags["leftHeld"]) { // This being first is important to avoid double move.
-            commands["leftDAS"] = true;
-        }
-    if (pressed["left"] && !flags["leftHeld"] && !flags["rightHeld"]) {
-        flags["leftHeld"] = true;
-        commands["doLeft"] = true;
-        commands["clearDAS"] = true;
-    }    
-    if (!pressed["left"]) {
-        flags["leftHeld"] = false;
-    }
-    // Right key:
-    if (pressed["right"] && flags["rightHeld"]) { // This being first is important to avoid double move.
-        commands["rightDAS"] = true;
-    }
-    if (pressed["right"] && !flags["rightHeld"] && !flags["leftHeld"]) {
-        flags["rightHeld"] = true;
-        commands["doRight"] = true;
-        commands["clearDAS"] = true;
-    }    
-    if (!pressed["right"]) {
-        flags["rightHeld"] = false;
-    }
-    // Down key:
-    if (pressed["down"]) {
-        commands["softDrop"] = true;
-    }
-    else {
-        commands["softDrop"] = false;
-    }
-    // Escape key:
-    if (pressed["esc"]) {
-        if (!flags["escHeld"]) {
-            commands["reset"] = true;
-            flags["escHeld"] = true;
-        }
-    }
-    else {
-        flags["escHeld"] = false;
-    }
 }
 
 void InputHandler::keyParser(int key,int action)

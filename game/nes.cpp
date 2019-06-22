@@ -18,6 +18,7 @@ lineScore{0, 0, 0, 0},
 lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
 nextPiece{nullptr},
+pressedPtr{nullptr},
 filledRows{},
 grid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
@@ -65,6 +66,7 @@ void NESTetris::resetGame()
 
 void NESTetris::runFrame()
 {
+    setCommands();
     if (commands["reset"]) {
         resetGame();
     }
@@ -292,6 +294,72 @@ void NESTetris::setEntryDelay()
     if (row <= 1) constants["entryDelay"] = 9;
     else if (row > 1 && row < 18) constants["entryDelay"] = 11 + 2*((row - 2)/4);
     else constants["entryDelay"] = 17;
+}
+
+void NESTetris::setCommands()
+{   // A key:
+    auto& pressed = *pressedPtr;
+    if (pressed["a"] && !flags["aHeld"] && !flags["sHeld"]) {
+        commands["doCCW"] = true;
+        flags["aHeld"] = true;
+    }
+    if (!pressed["a"]) {
+        flags["aHeld"] = false;
+    }
+    // S key:
+    if (pressed["s"] && !flags["sHeld"] && !flags["aHeld"]) {
+        commands["doCW"] = true;
+        flags["sHeld"] = true;
+    }
+    if (!pressed["s"]) {
+        flags["sHeld"] = false;
+    }
+    // Left key:
+    if (pressed["left"] && flags["leftHeld"]) { // This being first is important to avoid double move.
+            commands["leftDAS"] = true;
+        }
+    if (pressed["left"] && !flags["leftHeld"] && !flags["rightHeld"]) {
+        flags["leftHeld"] = true;
+        commands["doLeft"] = true;
+        commands["clearDAS"] = true;
+    }    
+    if (!pressed["left"]) {
+        flags["leftHeld"] = false;
+    }
+    // Right key:
+    if (pressed["right"] && flags["rightHeld"]) { // This being first is important to avoid double move.
+        commands["rightDAS"] = true;
+    }
+    if (pressed["right"] && !flags["rightHeld"] && !flags["leftHeld"]) {
+        flags["rightHeld"] = true;
+        commands["doRight"] = true;
+        commands["clearDAS"] = true;
+    }    
+    if (!pressed["right"]) {
+        flags["rightHeld"] = false;
+    }
+    // Down key:
+    if (pressed["down"]) {
+        commands["softDrop"] = true;
+    }
+    else {
+        commands["softDrop"] = false;
+    }
+    // Escape key:
+    if (pressed["esc"]) {
+        if (!flags["escHeld"]) {
+            commands["reset"] = true;
+            flags["escHeld"] = true;
+        }
+    }
+    else {
+        flags["escHeld"] = false;
+    }
+}
+
+void NESTetris::assignInputs(std::map<const std::string, bool>& pressedSource)
+{
+    pressedPtr = &pressedSource;
 }
 
 void resetBool(std::map<const std::string, bool>& bools)
