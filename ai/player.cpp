@@ -67,7 +67,7 @@ void Player::sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<s
 
 int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
 {
-    int bestEval = -100000;
+    int bestEval = -10000;
     int bestIndex = 0;
     int i = 0;
     for (auto moveGrid : moveGrids) {
@@ -85,21 +85,28 @@ int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
     return bestIndex;
 }
 
-void Player::bestMove()
+bool Player::bestMove()
 {
+    bool topout = false;
     std::vector<std::vector<int>> grids, moves;
     sweepPiece(grids, moves);
-    auto bestMoveIndex = evaluateMoves(grids);
-    auto rowColOrient = moves[bestMoveIndex];
-    currPiece->setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
-    grid.fillSet(currPiece->coords, currPiece->data.index);
-    auto filledRows = grid.getFilledRows();
-    lineCount += filledRows.size();
-    if (!filledRows.empty()) {
-        grid.clearRows(filledRows);
-        ++lineTypeCount[filledRows.size() - 1];
+    if (!grids.empty()) {
+        auto bestMoveIndex = evaluateMoves(grids);
+        auto rowColOrient = moves[bestMoveIndex];
+        currPiece->setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
+        grid.fillSet(currPiece->coords, currPiece->data.index);
+        auto filledRows = grid.getFilledRows();
+        lineCount += filledRows.size();
+        if (!filledRows.empty()) {
+            grid.clearRows(filledRows);
+            ++lineTypeCount[filledRows.size() - 1];
+        }
+        newPiece();
     }
-    newPiece();
+    else {
+        topout = true;
+    }
+    return topout;
 }
 
 

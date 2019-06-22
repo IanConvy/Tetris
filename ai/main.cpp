@@ -41,11 +41,12 @@ int main(int argc, char* argv[])
         bool held = false;
         drawer.drawFrame();
         glfwSwapBuffers(window);
-        while (!glfwWindowShouldClose(window)) {
+        bool topout = false;
+        while (!glfwWindowShouldClose(window) && !topout) {
             glfwPollEvents();
             if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && held == false) {
                 held = true;
-                player.bestMove();
+                topout = player.bestMove();
                 drawer.drawFrame();
                 glfwSwapBuffers(window);
             }

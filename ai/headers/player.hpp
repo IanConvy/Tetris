@@ -19,7 +19,7 @@ struct Player
     Player();
     void sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<std::vector<int>>& posHolder);
     void placePiece(int centerCol, int orient);
-    void bestMove();
+    bool bestMove();
     void newPiece();
     int evaluateMoves(std::vector<std::vector<int>>& moveGrids);
 };
