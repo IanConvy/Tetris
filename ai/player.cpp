@@ -45,35 +45,35 @@ void Player::placePiece(int centerCol, int orient)
     }
 }
 
-void Player::sweepPiece(std::vector<std::vector<int>>& holder)
+void Player::sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<std::vector<int>>& moveHolder)
 {
     auto origGrid = grid.grid;
-    for (unsigned int orient = 0; orient < currPiece->data.coordOffsets.size(); ++orient) {
+    for (int orient = 0; orient < currPiece->data.coordOffsets.size(); ++orient) {
         for (int col = 0; col < grid.width; ++col) {
             currPiece->setPosition(grid.height - 1, col, orient);
             if (!grid.collisionCheck(currPiece->coords)) {
                 placePiece(col, orient);
                 auto filledRows = grid.getFilledRows();
-                lineCount += filledRows.size();
                 if (!filledRows.empty()) {
                     grid.clearRows(filledRows);
                 }
-                holder.push_back(grid.grid);
+                gridHolder.push_back(grid.grid);
+                moveHolder.push_back({currPiece->centerRow, col, orient});
                 grid.grid = origGrid;
             }
         }
     }
 }
 
-std::vector<int> Player::evaluateMoves(std::vector<std::vector<int>> moves)
+int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
 {
     int minHoles = 1000;
     std::vector<int> holesIndex;
     int i = 0;
-    for (auto move : moves) {
-        auto lowerHeight = getLowerHeights(grid.height, grid.width, move);
-        auto upperHeight = getUpperHeights(grid.height, grid.width, move);
-        auto holes = getHoles(lowerHeight, upperHeight, move);
+    for (auto moveGrid : moveGrids) {
+        auto lowerHeight = getLowerHeights(grid.height, grid.width, moveGrid);
+        auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
+        auto holes = getHoles(lowerHeight, upperHeight, moveGrid);
         if (holes < minHoles) {
             minHoles = holes;
             holesIndex.clear();
@@ -87,22 +87,30 @@ std::vector<int> Player::evaluateMoves(std::vector<std::vector<int>> moves)
     int minRoughness = 1000;
     int roughnessIndex = 0;
     for (auto j : holesIndex) {
-        auto upperHeight = getUpperHeights(grid.height, grid.width, moves[j]);
+        auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrids[j]);
         auto roughness = getRoughness(upperHeight);
         if (roughness < minRoughness) {
             minRoughness = roughness;
             roughnessIndex = j;
         }
     }
-    return moves[roughnessIndex];
+    return roughnessIndex;
 }
 
 void Player::bestMove()
 {
-    std::vector<std::vector<int>> moves;
-    sweepPiece(moves);
-    auto bestMove = evaluateMoves(moves);
-    grid.grid = bestMove;
+    std::vector<std::vector<int>> grids, moves;
+    sweepPiece(grids, moves);
+    auto bestMoveIndex = evaluateMoves(grids);
+    auto rowColOrient = moves[bestMoveIndex];
+    currPiece->setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
+    grid.fillSet(currPiece->coords, currPiece->data.index);
+    auto filledRows = grid.getFilledRows();
+    lineCount += filledRows.size();
+    if (!filledRows.empty()) {
+        grid.clearRows(filledRows);
+        ++lineTypeCount[filledRows.size() - 1];
+    }
     newPiece();
 }
 

@@ -17,10 +17,10 @@ struct Player
     std::vector<int> lineTypeCount;
 
     Player();
-    void sweepPiece(std::vector<std::vector<int>>& holder);
+    void sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<std::vector<int>>& posHolder);
     void placePiece(int centerCol, int orient);
     void bestMove();
     void newPiece();
-    std::vector<int> evaluateMoves(std::vector<std::vector<int>> moves);
+    int evaluateMoves(std::vector<std::vector<int>>& moveGrids);
 };
 #endif

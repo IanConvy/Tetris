@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
         drawer.assignGrid(player.grid);
         drawer.assignLineCount(player.lineCount);
         drawer.assignNextPiece(player.currPiece);
+        drawer.assignlineTypeCount(player.lineTypeCount);
         bool held = false;
         drawer.drawFrame();
         glfwSwapBuffers(window);
