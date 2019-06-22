@@ -67,34 +67,22 @@ void Player::sweepPiece(std::vector<std::vector<int>>& gridHolder, std::vector<s
 
 int Player::evaluateMoves(std::vector<std::vector<int>>& moveGrids)
 {
-    int minHoles = 1000;
-    std::vector<int> holesIndex;
+    int bestEval = -100000;
+    int bestIndex = 0;
     int i = 0;
     for (auto moveGrid : moveGrids) {
         auto lowerHeight = getLowerHeights(grid.height, grid.width, moveGrid);
         auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
         auto holes = getHoles(lowerHeight, upperHeight, moveGrid);
-        if (holes < minHoles) {
-            minHoles = holes;
-            holesIndex.clear();
-            holesIndex.push_back(i);
-        }
-        else if (holes == minHoles) {
-            holesIndex.push_back(i);
+        auto roughness = getRoughness(upperHeight);
+        int eval = -(100*holes + roughness);
+        if (eval > bestEval) {
+            bestEval = eval;
+            bestIndex = i;
         }
         ++i;
     }
-    int minRoughness = 1000;
-    int roughnessIndex = 0;
-    for (auto j : holesIndex) {
-        auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrids[j]);
-        auto roughness = getRoughness(upperHeight);
-        if (roughness < minRoughness) {
-            minRoughness = roughness;
-            roughnessIndex = j;
-        }
-    }
-    return roughnessIndex;
+    return bestIndex;
 }
 
 void Player::bestMove()
