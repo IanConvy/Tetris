@@ -10,10 +10,9 @@
 #include "GLFW/glfw3.h"
 #include "headers/stb_image.hpp"
 #include "headers/shader.hpp"
-#include "headers/pieces.hpp"
 #include "headers/text.hpp"
-#include "headers/grid.hpp"
-#include "headers/pieces.hpp"
+#include "../game/headers/pieces.hpp"
+#include "../game/headers/grid.hpp"
 
 BoardDrawer::BoardDrawer(std::string location) : 
 brdShader(

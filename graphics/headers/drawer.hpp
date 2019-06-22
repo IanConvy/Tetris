@@ -2,8 +2,8 @@
 #ifndef DRAWER
 #define DRAWER
 
-#include "grid.hpp"
-#include "pieces.hpp"
+#include "../../game/headers/grid.hpp"
+#include "../../game/headers/pieces.hpp"
 #include "stb_image.hpp"
 #include "shader.hpp"
 #include "text.hpp"
