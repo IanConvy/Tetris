@@ -5,20 +5,26 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <iostream>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
 InputHandler::InputHandler(GLFWwindow* window) :
 keyPress{0, 0, 0, 0, 0},
-callPtr{keyCallBack},
+mousePos{0, 0},
+keyCallPtr{keyCallBack},
+mousePosCallPtr{mousePosCallBack},
+mouseClickCallPtr{mouseClickCallBack},
 pressed{
     {"a", false},
     {"s", false},
     {"lef", false},
     {"right", false},
     {"down", false},
-    {"esc", false}},
+    {"esc", false},
+    {"mouseLeft", false},
+    {"mouseRight", false}},
 flags{
     {"aHeld", false},
     {"sHeld", false},
@@ -26,7 +32,9 @@ flags{
     {"rightHeld", false},
     {"escHeld", false}}
 {
-    glfwSetKeyCallback(window, callPtr);
+    glfwSetKeyCallback(window, keyCallPtr);
+    glfwSetCursorPosCallback(window, mousePosCallPtr);
+    glfwSetMouseButtonCallback(window, mouseClickCallPtr);
     glfwSetWindowUserPointer(window, this);
 }
 
@@ -82,9 +90,45 @@ void InputHandler::keyParser(int key,int action)
     }
 }
 
+void InputHandler::mouseClickParser(int button, int action)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            pressed["mouseLeft"] = true;
+        }
+        else {
+            pressed["mouseLeft"] = false;
+        }
+    }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) {
+            pressed["mouseRight"] = true;
+        }
+        else {
+            pressed["mouseRight"] = false;
+        }
+    }
+}
+
+void InputHandler::setMousePos(double xpos, double ypos)
+{
+    mousePos[0] = xpos;
+    mousePos[1] = ypos;
+}
+
 void InputHandler::keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->keyParser(key, action);
+}
+
+void InputHandler::mousePosCallBack(GLFWwindow* window, double xpos, double ypos)
+{
+    static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->setMousePos(xpos, ypos);
+}
+
+void InputHandler::mouseClickCallBack(GLFWwindow* window, int button, int action, int mode)
+{
+    static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->mouseClickParser(button, action);
 }
 
 
