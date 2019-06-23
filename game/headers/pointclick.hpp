@@ -30,7 +30,7 @@ struct PointClick
     void assignMousePos(std::vector<double>& posSource);
     void runFrame();
     void writePiece();
-    void highlightPiece();
+    void highlightPiece(bool collision);
     void unHighlightPiece();
     void updatePiece();
     void setConstants();

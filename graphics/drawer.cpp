@@ -33,8 +33,8 @@ previewPos{
     776, 550,   902, 550},
 gridHeight{20},
 gridWidth{10},   
-blockTextures(3, 0),
-pieceTexMap{0, 0, 1, 1, 0, 2, 2, 2},
+blockTextures(5, 0),
+pieceTexMap{0, 0, 1, 1, 0, 2, 2, 2, 3, 4},
 blockWidthSpacing{(playFieldPos[2] - playFieldPos[0])/gridWidth},
 blockHeightSpacing{(playFieldPos[5] - playFieldPos[1])/gridHeight},
 nextPieceSource{nullptr},
@@ -68,6 +68,8 @@ lineTypeCountSource{nullptr}
     createTexture(blockTextures[0], location + std::string("/images/yellowblock.png"));
     createTexture(blockTextures[1], location + std::string("/images/redblock.png"));
     createTexture(blockTextures[2], location + std::string("/images/whiteblock.png"));
+    createTexture(blockTextures[3], location + std::string("/images/allowedblock.png"));
+    createTexture(blockTextures[4], location + std::string("/images/disallowedblock.png"));
 }
 
 BoardDrawer::~BoardDrawer()

@@ -50,10 +50,15 @@ void PointClick::resetGame()
     commands["doCW"] = false;
     commands["reset"] = false;
     commands["placePiece"] = false;
+    commands["onScreen"] = false;
 
     dynamic["lineCount"] =  0;
     dynamic["score"] =  0;
     dynamic["level"] = startLevel;
+    dynamic["mouseRow"] = -1;
+    dynamic["mouseCol"] = -1;
+    dynamic["lastPlacedRow"] = -1;
+    dynamic["lastPlacedCol"] = -1;
     
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
@@ -66,16 +71,29 @@ void PointClick::resetGame()
 
 void PointClick::runFrame()
 {
-    unHighlightPiece();
     setCommands();
-    auto& xyPos = *mousePosPtr;
-    auto mouseRowCol = getGridPosition(xyPos[0], xyPos[1]);
-    currPiece->setPosition(mouseRowCol[0], mouseRowCol[1], currPiece->orient);
+    unHighlightPiece();
 
+    // Move Piece:
+    if (commands["onScreen"]) {
+        currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], currPiece->orient);
+    }
+
+     // CCW Rotations:
+    if (commands["doCCW"]) {
+        currPiece->rotate(-1);
+    }
+    // CW Rotations:
+    if (commands["doCW"]) {
+        currPiece->rotate(1);
+    }
+    
     // Place Piece:
-    if (commands["placePiece"]) {
+    if (commands["placePiece"] && commands["onScreen"]) {
         if (!gameGrid.collisionCheck(currPiece->coords)) {
             writePiece();
+            dynamic["lastPlacedRow"] = dynamic["mouseRow"];
+            dynamic["lastPlacedCol"] = dynamic["mouseCol"];
             filledRows = gameGrid.getFilledRows();
             if (!filledRows.empty()) {
                 dynamic["lineCount"] += filledRows.size();
@@ -86,18 +104,17 @@ void PointClick::runFrame()
             }
             displayGrid.grid = gameGrid.grid;
             updatePiece();
-            currPiece->setPosition(mouseRowCol[0], mouseRowCol[1], 0);
+            currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
         }
     }
-     // CCW Rotations:
-    if (commands["doCCW"]) {
-        currPiece->rotate(-1);
+
+    // Display Piece:
+    if (commands["onScreen"] 
+        && (dynamic["mouseRow"] != dynamic["lastPlacedRow"] || dynamic["mouseCol"] != dynamic["lastPlacedCol"])) {
+        highlightPiece(gameGrid.collisionCheck(currPiece->coords));
+        dynamic["lastPlacedRow"] = -1;
+        dynamic["lastPlacedCol"] = -1;
     }
-    // CW Rotations:
-    if (commands["doCW"]) {
-        currPiece->rotate(1);
-    }
-    highlightPiece();
 
     // Reset:
     if (commands["reset"]) {
@@ -114,9 +131,14 @@ void PointClick::writePiece()
     gameGrid.fillSet(currPiece->coords, currPiece->data.index);
 }
 
-void PointClick::highlightPiece()
+void PointClick::highlightPiece(bool collision)
 {
-    displayGrid.fillSet(currPiece->coords, currPiece->data.index);
+    if (!collision) {
+        displayGrid.fillSet(currPiece->coords, 8);
+    }
+    else {
+        displayGrid.fillSet(currPiece->coords, 9);
+    }
 }
 
 void PointClick::unHighlightPiece()
@@ -160,6 +182,14 @@ void PointClick::setConstants()
 void PointClick::setCommands()
 {   
     auto& pressed = *pressedPtr;
+    auto& xyPos = *mousePosPtr; 
+    // Mouse Pos:
+    auto mouseRowCol = getGridPosition(xyPos[0], xyPos[1]);
+    dynamic["mouseRow"] = mouseRowCol[0];
+    dynamic["mouseCol"] = mouseRowCol[1];
+    if (mouseRowCol[0] >= 0 && mouseRowCol[0] < gameGrid.height && mouseRowCol[1] >= 0 && mouseRowCol[1] < gameGrid.width) {
+        commands["onScreen"] = true;
+    }
     // Left Mouse Button:
     if (pressed["mouseLeft"] && !flags["mouseLeftHeld"]) {
         commands["placePiece"] = true;
@@ -196,8 +226,14 @@ void PointClick::setCommands()
 
 std::vector<int> PointClick::getGridPosition(double xpos, double ypos)
 {
-    int row = (bottomLeftY - ypos) / (pixelHeight/gameGrid.height);
-    int col = (xpos - bottomLeftX) / (pixelWidth/gameGrid.width);
+    int row = (bottomLeftY >= ypos) ? (bottomLeftY - ypos) / (pixelHeight/gameGrid.height) : -1;
+    int col = (bottomLeftX <= xpos) ? (xpos - bottomLeftX) / (pixelWidth/gameGrid.width) : -1;
+    if (row >= gameGrid.height) {
+        row = -1;
+    }
+    if (col >= gameGrid.width) {
+        col = -1;
+    }
     return std::vector<int>{row, col};
 }
 
