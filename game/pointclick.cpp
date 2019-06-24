@@ -27,6 +27,7 @@ flags{
     {"xHeld", false},
     {"escHeld", false}},
 record{},
+pieceSeq{},
 lineScore{0, 0, 0, 0},
 lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
@@ -65,7 +66,7 @@ void PointClick::resetGame()
     dynamic["mouseCol"] = -1;
     dynamic["lastPlacedRow"] = -1;
     dynamic["lastPlacedCol"] = -1;
-    dynamic["move"];
+    dynamic["move"] = 0;
     
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
@@ -75,6 +76,9 @@ void PointClick::resetGame()
     nextPiece = pieceGen.getRandomPiece();
     setConstants();
     record.clear();
+    pieceSeq.clear();
+    pieceSeq.push_back(currPiece->data.name);
+    pieceSeq.push_back(nextPiece->data.name);
     recordMove();
 }
 
@@ -123,6 +127,9 @@ void PointClick::runFrame()
             }
             displayGrid.grid = gameGrid.grid;
             updatePiece();
+            if (dynamic["move"] == pieceSeq.size() - 1) {
+                pieceSeq.push_back(nextPiece->data.name);
+            }
             if (dynamic["move"] != record.size() - 1) {
                 truncateRecord(dynamic["move"]);
             }
@@ -174,7 +181,12 @@ void PointClick::unHighlightPiece()
 void PointClick::updatePiece()
 {
     currPiece.swap(nextPiece);
-    nextPiece = pieceGen.getRandomPiece();
+    if (dynamic["move"] < pieceSeq.size() - 1) {
+        nextPiece = pieceGen.getPiece(pieceSeq[dynamic["move"] + 1]);
+    }
+    else {
+        nextPiece = pieceGen.getRandomPiece();
+    }
     currPiece->setPosition(19, 5, 0);
 }
 

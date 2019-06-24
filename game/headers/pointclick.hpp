@@ -23,6 +23,7 @@ struct PointClick
     std::unique_ptr<Piece> currPiece, nextPiece;
     std::map<const std::string, bool>* pressedPtr;
     std::vector<MoveRecord> record;
+    std::vector<std::string> pieceSeq;
     std::vector<double>* mousePosPtr;
     Grid gameGrid, displayGrid;
     PieceGenerator pieceGen;
