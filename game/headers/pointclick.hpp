@@ -2,12 +2,14 @@
 
 #define POINTCLICK
 #include <map>
+#include <utility>
 #include <string>
 #include <vector>
 #include <memory>
 
 #include "pieces.hpp"
 #include "grid.hpp"
+#include "record.hpp"
 
 struct PointClick
 {
@@ -20,6 +22,7 @@ struct PointClick
     std::vector<int> lineScore, lineTypeCount;
     std::unique_ptr<Piece> currPiece, nextPiece;
     std::map<const std::string, bool>* pressedPtr;
+    std::vector<MoveRecord> record;
     std::vector<double>* mousePosPtr;
     Grid gameGrid, displayGrid;
     PieceGenerator pieceGen;
@@ -37,6 +40,9 @@ struct PointClick
     void setEntryDelay();
     void checkLevel();
     void resetGame();
+    void recordMove();
+    void readMove(int move);
+    void truncateRecord(int moveInclusive);
     std::vector<int> getGridPosition(double xpos, double ypos);
 };
 

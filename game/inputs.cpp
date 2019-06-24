@@ -19,18 +19,14 @@ mouseClickCallPtr{mouseClickCallBack},
 pressed{
     {"a", false},
     {"s", false},
+    {"z", false},
+    {"x", false},
     {"lef", false},
     {"right", false},
     {"down", false},
     {"esc", false},
     {"mouseLeft", false},
-    {"mouseRight", false}},
-flags{
-    {"aHeld", false},
-    {"sHeld", false},
-    {"leftHeld", false},
-    {"rightHeld", false},
-    {"escHeld", false}}
+    {"mouseRight", false}}
 {
     glfwSetKeyCallback(window, keyCallPtr);
     glfwSetCursorPosCallback(window, mousePosCallPtr);
@@ -54,6 +50,22 @@ void InputHandler::keyParser(int key,int action)
         }
         if (action == GLFW_RELEASE) {
             pressed["s"] = false;
+        }
+    }
+    if (key == GLFW_KEY_Z) {
+        if (action == GLFW_PRESS) {
+            pressed["z"] = true;
+        }
+        if (action == GLFW_RELEASE) {
+            pressed["z"] = false;
+        }
+    }
+    if (key == GLFW_KEY_X) {
+        if (action == GLFW_PRESS) {
+            pressed["x"] = true;
+        }
+        if (action == GLFW_RELEASE) {
+            pressed["x"] = false;
         }
     }
     if (key == GLFW_KEY_LEFT) {

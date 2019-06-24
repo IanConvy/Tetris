@@ -6,15 +6,18 @@
 #include <memory>
 
 PieceData::PieceData(
+    std::string name,
     const unsigned int pieceIndex,
     const int numOrients,
-    std::vector<std::vector<std::vector<int>>> coordOffsets) : 
+    std::vector<std::vector<std::vector<int>>> coordOffsets) :
+name{name}, 
 index{pieceIndex},
 numOrients{numOrients},
 coordOffsets{coordOffsets}
 {}
 
 PieceData::PieceData() :
+name{},
 index{0},
 numOrients{1},
 coordOffsets{{{{0, 0}, {0, 0}, {0, 0}, {0, 0}}}}
@@ -76,10 +79,18 @@ std::unique_ptr<Piece> PieceGenerator::getRandomPiece()
     return randPiece;
 }
 
+std::unique_ptr<Piece> PieceGenerator::getPiece(std::string pieceName)
+{
+    auto pieceItr = allPieces.find(pieceName);
+    std::unique_ptr<Piece> piece{pieceItr != allPieces.end() ? new Piece(pieceItr->second) : new Piece()};
+    return piece;
+}
+
 const PieceData nullPiece{};
 
 const std::map<const std::string, PieceData> allPieces{
     {"lrPiece", {
+        "lrPiece",
         1, // Index
         4, // Number of orientations
         // Offsets from center
@@ -90,6 +101,7 @@ const std::map<const std::string, PieceData> allPieces{
         }
     },
     {"llPiece", {
+        "llPiece",
         2, // Index
         4, // Number of orientations
         // Offsets from center
@@ -100,6 +112,7 @@ const std::map<const std::string, PieceData> allPieces{
         }   
     },
     {"srPiece", {
+        "srPiece",
         3, // Index
         2, // Number of orientations
         // Offsets from center
@@ -108,6 +121,7 @@ const std::map<const std::string, PieceData> allPieces{
         }
     },
     {"slPiece", {
+        "slPiece",
         4, // Index
         2, // Number of orientations
         // Offsets from center
@@ -116,6 +130,7 @@ const std::map<const std::string, PieceData> allPieces{
         }
     },
     {"iPiece", {
+        "iPiece",
         5, // Index
         2, // Number of orientations
         // Row offsets from center
@@ -124,6 +139,7 @@ const std::map<const std::string, PieceData> allPieces{
         }
     },
     {"tPiece", {
+        "tPiece",
         6, // Index
         4, // Number of orientations
         // Offsets from center
@@ -134,6 +150,7 @@ const std::map<const std::string, PieceData> allPieces{
         } 
     },
     {"sqPiece", {
+        "sqPiece",
         7, // Index
         1, // Number of orientations
         // Offsets from center

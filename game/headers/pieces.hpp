@@ -8,12 +8,14 @@
 
 struct PieceData
 {
+    std::string name;
     const unsigned int index;
     const int numOrients;
     std::vector<std::vector<std::vector<int>>> coordOffsets;
 
     PieceData();
     PieceData(
+        std::string name,
         const unsigned int index,
         const int numOrients,
         std::vector<std::vector<std::vector<int>>> coordOffsets
@@ -41,6 +43,7 @@ struct PieceGenerator
 
     PieceGenerator(std::vector<std::string> pieceList);
     std::unique_ptr<Piece> getRandomPiece();
+    std::unique_ptr<Piece> getPiece(std::string pieceName);
 };
 
 extern const std::map<const std::string, PieceData> allPieces;

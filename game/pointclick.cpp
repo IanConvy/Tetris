@@ -2,6 +2,7 @@
 
 #include "headers/pieces.hpp"
 #include "headers/grid.hpp"
+#include "headers/record.hpp"
 
 #include <map>
 #include <string>
@@ -22,7 +23,10 @@ flags{
     {"mouseLeftHeld", false},
     {"aHeld", false},
     {"sHeld", false},
+    {"zHeld", false},
+    {"xHeld", false},
     {"escHeld", false}},
+record{},
 lineScore{0, 0, 0, 0},
 lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
@@ -51,6 +55,8 @@ void PointClick::resetGame()
     commands["reset"] = false;
     commands["placePiece"] = false;
     commands["onScreen"] = false;
+    commands["recordBack"] = false;
+    commands["recordForward"] = false;
 
     dynamic["lineCount"] =  0;
     dynamic["score"] =  0;
@@ -59,6 +65,7 @@ void PointClick::resetGame()
     dynamic["mouseCol"] = -1;
     dynamic["lastPlacedRow"] = -1;
     dynamic["lastPlacedCol"] = -1;
+    dynamic["move"];
     
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
@@ -67,12 +74,23 @@ void PointClick::resetGame()
     currPiece = pieceGen.getRandomPiece();
     nextPiece = pieceGen.getRandomPiece();
     setConstants();
+    record.clear();
+    recordMove();
 }
 
 void PointClick::runFrame()
 {
     setCommands();
     unHighlightPiece();
+
+    // Read Record:
+    if (commands["recordBack"] && dynamic["move"] > 0) {
+        readMove(dynamic["move"] - 1);
+        commands["onScreen"] = false;
+    }
+    else if (commands["recordForward"] && dynamic["move"] < record.size() - 1) {
+        readMove(dynamic["move"] + 1);
+    }
 
     // Move Piece:
     if (commands["onScreen"]) {
@@ -91,9 +109,10 @@ void PointClick::runFrame()
     // Place Piece:
     if (commands["placePiece"] && commands["onScreen"]) {
         if (!gameGrid.collisionCheck(currPiece->coords)) {
-            writePiece();
+            ++dynamic["move"];
             dynamic["lastPlacedRow"] = dynamic["mouseRow"];
             dynamic["lastPlacedCol"] = dynamic["mouseCol"];
+            writePiece();
             filledRows = gameGrid.getFilledRows();
             if (!filledRows.empty()) {
                 dynamic["lineCount"] += filledRows.size();
@@ -104,6 +123,10 @@ void PointClick::runFrame()
             }
             displayGrid.grid = gameGrid.grid;
             updatePiece();
+            if (dynamic["move"] != record.size() - 1) {
+                truncateRecord(dynamic["move"]);
+            }
+            recordMove();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
         }
     }
@@ -120,7 +143,7 @@ void PointClick::runFrame()
     if (commands["reset"]) {
         resetGame();
     }
-    
+    // Clear commands:
     for (auto& keyValue : commands) {
         keyValue.second = false;
     }
@@ -153,6 +176,35 @@ void PointClick::updatePiece()
     currPiece.swap(nextPiece);
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
+}
+
+void PointClick::recordMove()
+{
+    record.push_back(MoveRecord{
+        currPiece->data.name,
+        nextPiece->data.name,
+        gameGrid.grid,
+        dynamic["level"],
+        dynamic["lineCount"],
+        lineTypeCount});
+}
+
+void PointClick::readMove(int move)
+{
+    dynamic["move"] = move;
+    auto moveRecord = record[move];
+    currPiece = pieceGen.getPiece(moveRecord.pieceName);
+    nextPiece = pieceGen.getPiece(moveRecord.nextPieceName);
+    gameGrid.grid = moveRecord.gameGrid;
+    displayGrid.grid = moveRecord.gameGrid;
+    dynamic["level"] = moveRecord.level;
+    dynamic["lineCount"] = moveRecord.lineCount;
+    lineTypeCount = moveRecord.lineTypeCount;
+}
+
+void PointClick::truncateRecord(int moveInclusive)
+{
+    record.erase(record.begin() + moveInclusive, record.end()); 
 }
 
 void PointClick::checkLevel()
@@ -213,6 +265,22 @@ void PointClick::setCommands()
     }
     if (!pressed["s"]) {
         flags["sHeld"] = false;
+    }
+    // Z key:
+    if (pressed["z"] && !flags["zHeld"]) {
+        commands["recordBack"] = true;
+        flags["zHeld"] = true;
+    }
+    if (!pressed["z"]) {
+        flags["zHeld"] = false;
+    }
+    // X key:
+    if (pressed["x"] && !flags["xHeld"]) {
+        commands["recordForward"] = true;
+        flags["xHeld"] = true;
+    }
+    if (!pressed["x"]) {
+        flags["xHeld"] = false;
     }
     // Escape key:
     if (pressed["esc"] && !flags["escHeld"]) {
