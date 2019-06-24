@@ -21,6 +21,7 @@ commands{},
 dynamic{},
 flags{
     {"mouseLeftHeld", false},
+    {"mouseRightHeld", false},
     {"aHeld", false},
     {"sHeld", false},
     {"zHeld", false},
@@ -261,6 +262,14 @@ void PointClick::setCommands()
     }
     if (!pressed["mouseLeft"]) {
         flags["mouseLeftHeld"] = false;
+    } 
+    // Right Mouse Button:
+    if (pressed["mouseRight"] && !flags["mouseRightHeld"]) {
+        commands["doCW"] = true;
+        flags["mouseRightHeld"] = true;
+    }
+    if (!pressed["mouseRight"]) {
+        flags["mouseRightHeld"] = false;
     } 
     // A key:
     if (pressed["a"] && !flags["aHeld"] && !flags["sHeld"]) {
