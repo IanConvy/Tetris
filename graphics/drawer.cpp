@@ -5,6 +5,9 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <map>
+#include <sstream>
+#include <iomanip>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -42,7 +45,8 @@ gridSource{nullptr},
 lineCountSource{nullptr},
 scoreSource{nullptr},
 levelSource{nullptr},
-lineTypeCountSource{nullptr}
+lineTypeCountSource{nullptr},
+miscDataSource{nullptr}
 {    
     brdShader.setFloat("totalWidth", 1035);
     brdShader.setFloat("totalHeight", 899);
@@ -91,6 +95,7 @@ void BoardDrawer::drawFrame()
     drawLineTypeCount();
     drawScore();
     drawLevel();
+    drawMiscData();
 }
 
 void BoardDrawer::drawBoard() 
@@ -222,6 +227,25 @@ void BoardDrawer::drawLevel()
     }
 }
 
+void BoardDrawer::drawMiscData()
+{
+     if (miscDataSource != nullptr) {
+        float spacing = (200 / miscDataSource->size() < 50) ? 200 / miscDataSource->size() : 50;
+        int dataCount = 0;
+        for (const auto& labelValue : *miscDataSource) {
+            std::stringstream valStream;
+            valStream << std::fixed << std::setprecision(2) << labelValue.second;
+            std::string valueRaw = valStream.str();
+            std::string dataStr = labelValue.first + std::string("   ") + valueRaw;
+            auto textVertices = textDrawer.getTextVertices(dataStr, 68, 333, 255 + 45*dataCount, 255 + 45*dataCount + 22);
+            for (auto& charVertices : textVertices) {
+                drawSquare(charVertices, fontTexture);
+            }
+            ++dataCount;
+        }
+    }
+}
+
 void BoardDrawer::assignGrid(Grid& grid)
 {
     gridSource = &grid;
@@ -250,6 +274,11 @@ void BoardDrawer::assignNextPiece(std::unique_ptr<Piece>& piecePtr)
 void BoardDrawer::assignScore(int& score)
 {
     scoreSource = &score;
+}
+
+void BoardDrawer::assignMiscData(std::map<std::string, float>& data)
+{
+    miscDataSource = &data;
 }
 
 void BoardDrawer::drawSquare(const std::vector<float>& vertices, unsigned int texture)

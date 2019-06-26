@@ -37,6 +37,7 @@ nextPiece{nullptr},
 pressedPtr{nullptr},
 mousePosPtr{nullptr},
 filledRows{},
+eval{},
 gameGrid{20, 10},
 displayGrid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
@@ -83,6 +84,10 @@ void PointClick::resetGame()
     pieceSeq.push_back(currPiece->data.name);
     pieceSeq.push_back(nextPiece->data.name);
     recordMove();
+    Move move {lineTypeCount, gameGrid.grid};
+    auto newEval = evaluator.evaluateMove(move);
+    eval.swap(newEval);
+
 }
 
 void PointClick::runFrame()
@@ -139,10 +144,8 @@ void PointClick::runFrame()
             recordMove();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
             Move move {lineTypeCount, gameGrid.grid};
-            auto eval = evaluator.evaluateMove(move);
-            for (auto labelScore : eval) {
-                std::cout << labelScore.first << ": " << labelScore.second << std::endl;
-            }
+            auto newEval = evaluator.evaluateMove(move);
+            eval.swap(newEval);
         }
     }
 

@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
             drawer.assignlineTypeCount(game.lineTypeCount);
             drawer.assignNextPiece(game.nextPiece);
             drawer.assignScore(game.dynamic["score"]);
+            drawer.assignMiscData(game.eval);
 
             double rendTime = 0;
             const double rendSecs = 1 / 60.1;

@@ -65,8 +65,8 @@ std::map<std::string, float> Evaluator::evaluateMove(Move& move) {
     std::map<std::string, float> scores;
     scores["holes"] = -5 * getHoles(lowerHeight, upperHeight, move.grid);
     scores["rough"] = -0.25 * getRoughness(upperHeight);
-    scores["minHeight"] = 1 * (heightMin < 5) ? heightMin : 5;
-    scores["maxHeight"] = -1 * (heightMax > 10) ? heightMax - 10 : 0;
+    scores["minheight"] = 1 * (heightMin < 5) ? heightMin : 5;
+    scores["maxheight"] = -1 * (heightMax > 10) ? heightMax - 10 : 0;
     scores["tetris"] = 10 * move.lineTypeCount[3];
     scores["lines"] = -1 * move.lineTypeCount[0] + move.lineTypeCount[1] + move.lineTypeCount[2];
     float total = 0;

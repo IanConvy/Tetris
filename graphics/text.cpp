@@ -48,7 +48,8 @@ charTexCoords{
     {'8', {3638, 3744}},
     {'9', {3745, 3864}},
     {'-', {3865, 3960}},
-    {' ', {3950, 3960}}}
+    {' ', {3950, 3960}},
+    {'.', {3960, 3993}}}
 {}
 
 std::vector<std::vector<float>> TextDrawer::getTextVertices(std::string text, float x0, float x1, float y0, float y1)
@@ -59,8 +60,8 @@ std::vector<std::vector<float>> TextDrawer::getTextVertices(std::string text, fl
     for (auto& c : text) {
         float x0Char = x0 + spacing*charCount;
         float x1Char = x0Char + spacing;
-        float x0Tex = charTexCoords[c][0] / 3960.0;
-        float x1Tex = charTexCoords[c][1] / 3960.0;
+        float x0Tex = charTexCoords[c][0] / 4000.0;
+        float x1Tex = charTexCoords[c][1] / 4000.0;
         std::vector<float> charVertices{
             x0Char, y1, 0,  x0Tex, 0,
             x1Char, y1, 0,  x1Tex, 0,

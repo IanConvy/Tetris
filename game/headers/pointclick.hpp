@@ -26,6 +26,7 @@ struct PointClick
     std::vector<MoveRecord> record;
     std::vector<std::string> pieceSeq;
     std::vector<double>* mousePosPtr;
+    std::map<std::string, float> eval;
     Grid gameGrid, displayGrid;
     PieceGenerator pieceGen;
     Evaluator evaluator;
