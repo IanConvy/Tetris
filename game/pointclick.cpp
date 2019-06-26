@@ -3,6 +3,7 @@
 #include "headers/pieces.hpp"
 #include "headers/grid.hpp"
 #include "headers/record.hpp"
+#include "../ai/headers/evaluate.hpp"
 
 #include <map>
 #include <string>
@@ -38,7 +39,8 @@ mousePosPtr{nullptr},
 filledRows{},
 gameGrid{20, 10},
 displayGrid{20, 10},
-pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
+pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
+evaluator{20, 10}
 {
     pixelHeight = 610;
     pixelWidth = x1 - x0;
@@ -136,6 +138,11 @@ void PointClick::runFrame()
             }
             recordMove();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
+            Move move {lineTypeCount, gameGrid.grid};
+            auto eval = evaluator.evaluateMove(move);
+            for (auto labelScore : eval) {
+                std::cout << labelScore.first << ": " << labelScore.second << std::endl;
+            }
         }
     }
 

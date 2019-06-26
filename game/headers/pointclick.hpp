@@ -10,6 +10,7 @@
 #include "pieces.hpp"
 #include "grid.hpp"
 #include "record.hpp"
+#include "../../ai/headers/evaluate.hpp"
 
 struct PointClick
 {
@@ -27,6 +28,7 @@ struct PointClick
     std::vector<double>* mousePosPtr;
     Grid gameGrid, displayGrid;
     PieceGenerator pieceGen;
+    Evaluator evaluator;
 
     PointClick(int startLevel, int x0, int x1, int y0, int y1);
     void setCommands();
