@@ -24,6 +24,7 @@ pressed{
     {"lef", false},
     {"right", false},
     {"down", false},
+    {"up", false},
     {"esc", false},
     {"mouseLeft", false},
     {"mouseRight", false}}
@@ -90,6 +91,14 @@ void InputHandler::keyParser(int key,int action)
         }
         if (action == GLFW_RELEASE) {
             pressed["down"] = false;
+        }
+    }
+    if (key == GLFW_KEY_UP) {
+        if (action == GLFW_PRESS) {
+            pressed["up"] = true;
+        }
+        if (action == GLFW_RELEASE) {
+            pressed["up"] = false;
         }
     }
     if (key == GLFW_KEY_ESCAPE) {

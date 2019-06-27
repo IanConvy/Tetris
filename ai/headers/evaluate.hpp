@@ -21,11 +21,11 @@ struct Move
 struct Evaluator
 {
     Grid evalGrid;
+    std::vector<std::pair<Move, std::map<std::string, float>>> moves;
 
     Evaluator(int height, int width);
-    std::vector<Move> getMoves(PieceData& data, std::vector<int>& startingGrid);
+    void generateMoves(const PieceData& data, std::vector<int>& startingGrid);
     std::map<std::string, float> evaluateMove(Move& move);
-    std::vector<std::pair<int, float>> rankMoves(const std::vector<Move>& moves);
 };
 
 std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid);

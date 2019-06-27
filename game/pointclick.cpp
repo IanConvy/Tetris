@@ -27,7 +27,12 @@ flags{
     {"sHeld", false},
     {"zHeld", false},
     {"xHeld", false},
-    {"escHeld", false}},
+    {"leftHeld", false},
+    {"rightHeld", false},
+    {"upHeld", false},
+    {"downHeld", false},
+    {"escHeld", false},
+    {"aiMode", false}},
 record{},
 pieceSeq{},
 lineScore{0, 0, 0, 0},
@@ -62,6 +67,8 @@ void PointClick::resetGame()
     commands["onScreen"] = false;
     commands["recordBack"] = false;
     commands["recordForward"] = false;
+    commands["enterAIMode"] = false;
+    commands["exitAIMode"] = false;
 
     dynamic["lineCount"] =  0;
     dynamic["score"] =  0;
@@ -71,7 +78,10 @@ void PointClick::resetGame()
     dynamic["lastPlacedRow"] = -1;
     dynamic["lastPlacedCol"] = -1;
     dynamic["move"] = 0;
+    dynamic["evalIndex"] = 0;
     
+    flags["aiMode"] = false;
+
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
     gameGrid.reset();
@@ -85,16 +95,57 @@ void PointClick::resetGame()
     pieceSeq.push_back(nextPiece->data.name);
     recordMove();
     Move move {lineTypeCount, gameGrid.grid};
-    auto newEval = evaluator.evaluateMove(move);
-    eval.swap(newEval);
-
+    eval = evaluator.evaluateMove(move);
+    evaluator.generateMoves(currPiece->data, gameGrid.grid);
 }
 
 void PointClick::runFrame()
 {
     setCommands();
-    unHighlightPiece();
+    if (commands["enterAIMode"]) {
+        unHighlightPiece();
+        dynamic["evalIndex"] = 0;
+        displayEvalMoves(dynamic["evalIndex"]);
+        flags["aiMode"] = true;
+    }
+    if (commands["exitAIMode"]) {
+        displayGrid.grid = gameGrid.grid;
+        Move move {lineTypeCount, gameGrid.grid};
+        eval = evaluator.evaluateMove(move);
+        flags["aiMode"] = false;
+    }
+    if (flags["aiMode"]) {
+        runAIFrame();
+    }
+    else {
+        runGameFrame();
+    }
+    // Reset:
+    if (commands["reset"]) {
+        resetGame();
+    }
+    // Clear commands:
+    for (auto& keyValue : commands) {
+        keyValue.second = false;
+    }
+}
 
+void PointClick::runAIFrame()
+{
+    // See Eval Moves:
+    if (commands["evalBackward"]) {
+        dynamic["evalIndex"] = (dynamic["evalIndex"] > 0) ? dynamic["evalIndex"] - 1 : evaluator.moves.size() - 1;
+        displayEvalMoves(dynamic["evalIndex"]);
+    }
+    else if (commands["evalForward"]) {
+        dynamic["evalIndex"] = (dynamic["evalIndex"] < evaluator.moves.size() - 1 ) ? dynamic["evalIndex"] + 1 : 0;
+        displayEvalMoves(dynamic["evalIndex"]);
+    }
+}
+
+void PointClick::runGameFrame()
+{
+    unHighlightPiece();
     // Read Record:
     if (commands["recordBack"] && dynamic["move"] > 0) {
         readMove(dynamic["move"] - 1);
@@ -102,13 +153,12 @@ void PointClick::runFrame()
     }
     else if (commands["recordForward"] && dynamic["move"] < record.size() - 1) {
         readMove(dynamic["move"] + 1);
+        commands["onScreen"] = false;
     }
-
     // Move Piece:
     if (commands["onScreen"]) {
         currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], currPiece->orient);
     }
-
      // CCW Rotations:
     if (commands["doCCW"]) {
         currPiece->rotate(-1);
@@ -117,7 +167,6 @@ void PointClick::runFrame()
     if (commands["doCW"]) {
         currPiece->rotate(1);
     }
-    
     // Place Piece:
     if (commands["placePiece"] && commands["onScreen"]) {
         if (!gameGrid.collisionCheck(currPiece->coords)) {
@@ -144,26 +193,16 @@ void PointClick::runFrame()
             recordMove();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
             Move move {lineTypeCount, gameGrid.grid};
-            auto newEval = evaluator.evaluateMove(move);
-            eval.swap(newEval);
+            eval = evaluator.evaluateMove(move);
+            evaluator.generateMoves(currPiece->data, gameGrid.grid);
         }
     }
-
     // Display Piece:
     if (commands["onScreen"] 
         && (dynamic["mouseRow"] != dynamic["lastPlacedRow"] || dynamic["mouseCol"] != dynamic["lastPlacedCol"])) {
         highlightPiece(gameGrid.collisionCheck(currPiece->coords));
         dynamic["lastPlacedRow"] = -1;
         dynamic["lastPlacedCol"] = -1;
-    }
-
-    // Reset:
-    if (commands["reset"]) {
-        resetGame();
-    }
-    // Clear commands:
-    for (auto& keyValue : commands) {
-        keyValue.second = false;
     }
 }
 
@@ -228,6 +267,13 @@ void PointClick::readMove(int move)
 void PointClick::truncateRecord(int moveInclusive)
 {
     record.erase(record.begin() + moveInclusive, record.end()); 
+}
+
+void PointClick::displayEvalMoves(int move_index)
+{
+    auto move = evaluator.moves[move_index];
+    displayGrid.grid = move.first.grid;
+    eval = move.second;
 }
 
 void PointClick::checkLevel()
@@ -312,6 +358,38 @@ void PointClick::setCommands()
     }
     if (!pressed["x"]) {
         flags["xHeld"] = false;
+    }
+    // Left key:
+    if (pressed["left"] && !flags["leftHeld"]) {
+        commands["evalBackward"] = true;
+        flags["leftHeld"] = true;
+    }
+    if (!pressed["left"]) {
+        flags["leftHeld"] = false;
+    }
+    // Right key:
+    if (pressed["right"] && !flags["rightHeld"]) {
+        commands["evalForward"] = true;
+        flags["rightHeld"] = true;
+    }
+    if (!pressed["right"]) {
+        flags["rightHeld"] = false;
+    }
+    // Up key:
+    if (pressed["up"] && !flags["upHeld"]) {
+        commands["enterAIMode"] = true;
+        flags["upHeld"] = true;
+    }
+    if (!pressed["up"]) {
+        flags["upHeld"] = false;
+    }
+    // Down key:
+    if (pressed["down"] && !flags["downHeld"]) {
+        commands["exitAIMode"] = true;
+        flags["downHeld"] = true;
+    }
+    if (!pressed["down"]) {
+        flags["downHeld"] = false;
     }
     // Escape key:
     if (pressed["esc"] && !flags["escHeld"]) {

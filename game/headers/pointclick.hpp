@@ -36,6 +36,8 @@ struct PointClick
     void assignPressed(std::map<const std::string, bool>& pressedSource);
     void assignMousePos(std::vector<double>& posSource);
     void runFrame();
+    void runGameFrame();
+    void runAIFrame();
     void writePiece();
     void highlightPiece(bool collision);
     void unHighlightPiece();
@@ -47,6 +49,7 @@ struct PointClick
     void recordMove();
     void readMove(int move);
     void truncateRecord(int moveInclusive);
+    void displayEvalMoves(int move_index);
     std::vector<int> getGridPosition(double xpos, double ypos);
 };
 

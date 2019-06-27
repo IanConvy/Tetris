@@ -10,15 +10,14 @@
 #include <utility>
 #include <cmath>
 
-
-
 Evaluator::Evaluator(int height, int width) :
-evalGrid{height, width}
+evalGrid{height, width},
+moves{}
 {}
 
-std::vector<Move> Evaluator::getMoves(PieceData& data, std::vector<int>& startingGrid)
+void Evaluator::generateMoves(const PieceData& data, std::vector<int>& startingGrid)
 {
-    std::vector<Move> moves;
+    moves.clear();
     moves.reserve(34);
     Piece piece{data};   
     for (int orient = 0; orient < data.coordOffsets.size(); ++orient) {
@@ -38,12 +37,14 @@ std::vector<Move> Evaluator::getMoves(PieceData& data, std::vector<int>& startin
                     evalGrid.clearRows(filledRows);
                 }
                 move.grid = evalGrid.grid;
-                moves.push_back(move);
+                moves.emplace_back(move, evaluateMove(move));
                 evalGrid.clearSet(piece.coords);
             }
         }
     }
-    return moves;
+    std::sort(moves.begin(), moves.end(),  
+        [](std::pair<Move, std::map<std::string, float>> i, std::pair<Move, std::map<std::string, float>>j) 
+            {return i.second["total"] > j.second["total"];});
 }
 
 std::map<std::string, float> Evaluator::evaluateMove(Move& move) {
@@ -75,21 +76,6 @@ std::map<std::string, float> Evaluator::evaluateMove(Move& move) {
     }
     scores["total"] = total;
     return scores;
-}
-
-std::vector<std::pair<int, float>> Evaluator::rankMoves(const std::vector<Move>& moves)
-{
-    std::vector<std::pair<int, float>> scoresMoves;
-    scoresMoves.reserve(moves.size());
-    int i = 0;
-    for (auto move : moves) {
-        auto score = evaluateMove(move);
-        scoresMoves.emplace_back(i, score["total"]);
-        ++i;
-    }
-    std::sort(scoresMoves.begin(), scoresMoves.end(),  
-        [](std::pair<int, float> i, std::pair<int, float> j) {return i.second > j.second;});
-    return scoresMoves; 
 }
 
 std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid)
