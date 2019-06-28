@@ -86,6 +86,17 @@ std::unique_ptr<Piece> PieceGenerator::getPiece(std::string pieceName)
     return piece;
 }
 
+std::vector<std::string> PieceGenerator::getRandomSequence(int length)
+{
+    std::vector<std::string> sequence;
+    sequence.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        int index = uDistr(rEng);
+        sequence.push_back(pieceList[index]);
+    }
+    return sequence;
+}
+
 const PieceData nullPiece{};
 
 const std::map<const std::string, PieceData> allPieces{

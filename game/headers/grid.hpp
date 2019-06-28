@@ -5,7 +5,7 @@
 
 struct Grid
 {
-    const int height, width;
+    int height, width;
     std::vector<int> grid, bufferGrid;
 
     Grid(const int height, const int width);

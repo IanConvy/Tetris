@@ -3,6 +3,7 @@
 
 #include "../../game/headers/grid.hpp"
 #include "../../game/headers/pieces.hpp"
+#include "../../game/headers/board.hpp"
 
 #include <vector>
 #include <string>
@@ -11,21 +12,15 @@
 #include <utility>
 #include <cmath>
 
-struct Move
-{
-    std::vector<int> lineTypeCount;
-    std::vector<int> grid;
-    std::vector<std::string> pieceSeq;
-};
-
 struct Evaluator
 {
     Grid evalGrid;
-    std::vector<std::pair<Move, std::map<std::string, float>>> moves;
+    std::vector<std::pair<Board, std::map<std::string, float>>> moves;
+    PieceGenerator pieceGen;
 
     Evaluator(int height, int width);
-    void generateMoves(const PieceData& data, std::vector<int>& startingGrid);
-    std::map<std::string, float> evaluateMove(Move& move);
+    void generateMoves(Board& startingBoard, Piece piece);
+    std::map<std::string, float> evaluateMove(Board& move);
 };
 
 std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid);

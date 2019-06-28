@@ -2,7 +2,7 @@
 
 #include "headers/pieces.hpp"
 #include "headers/grid.hpp"
-#include "headers/record.hpp"
+#include "headers/board.hpp"
 #include "../ai/headers/evaluate.hpp"
 
 #include <map>
@@ -31,19 +31,19 @@ flags{
     {"rightHeld", false},
     {"upHeld", false},
     {"downHeld", false},
+    {"spaceHeld", false},
     {"escHeld", false},
     {"aiMode", false}},
 record{},
 pieceSeq{},
 lineScore{0, 0, 0, 0},
-lineTypeCount{0, 0, 0, 0},
 currPiece{nullptr},
 nextPiece{nullptr},
 pressedPtr{nullptr},
 mousePosPtr{nullptr},
-filledRows{},
 eval{},
-gameGrid{20, 10},
+board{20, 10},
+boardBackup{20, 10},
 displayGrid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
 evaluator{20, 10}
@@ -69,8 +69,9 @@ void PointClick::resetGame()
     commands["recordForward"] = false;
     commands["enterAIMode"] = false;
     commands["exitAIMode"] = false;
+    commands["evalForward"] = false;
+    commands["evalBackward"] = false;
 
-    dynamic["lineCount"] =  0;
     dynamic["score"] =  0;
     dynamic["level"] = startLevel;
     dynamic["mouseRow"] = -1;
@@ -82,21 +83,15 @@ void PointClick::resetGame()
     
     flags["aiMode"] = false;
 
-    lineTypeCount = {0, 0, 0, 0};
-    filledRows.clear();
-    gameGrid.reset();
+    board.reset();
     displayGrid.reset();
-    currPiece = pieceGen.getRandomPiece();
-    nextPiece = pieceGen.getRandomPiece();
+    pieceSeq = pieceGen.getRandomSequence(750);
+    updatePiece();
     setConstants();
     record.clear();
-    pieceSeq.clear();
-    pieceSeq.push_back(currPiece->data.name);
-    pieceSeq.push_back(nextPiece->data.name);
-    recordMove();
-    Move move {lineTypeCount, gameGrid.grid};
-    eval = evaluator.evaluateMove(move);
-    evaluator.generateMoves(currPiece->data, gameGrid.grid);
+    record.push_back(board);
+    eval = evaluator.evaluateMove(board);
+    evaluator.generateMoves(board, *currPiece);
 }
 
 void PointClick::runFrame()
@@ -104,14 +99,16 @@ void PointClick::runFrame()
     setCommands();
     if (commands["enterAIMode"]) {
         unHighlightPiece();
+        evaluator.generateMoves(board, *currPiece);
+        boardBackup = board;
         dynamic["evalIndex"] = 0;
         displayEvalMoves(dynamic["evalIndex"]);
         flags["aiMode"] = true;
     }
     if (commands["exitAIMode"]) {
-        displayGrid.grid = gameGrid.grid;
-        Move move {lineTypeCount, gameGrid.grid};
-        eval = evaluator.evaluateMove(move);
+        board = boardBackup;
+        displayGrid = boardBackup.grid;
+        eval = evaluator.evaluateMove(board);
         flags["aiMode"] = false;
     }
     if (flags["aiMode"]) {
@@ -169,46 +166,21 @@ void PointClick::runGameFrame()
     }
     // Place Piece:
     if (commands["placePiece"] && commands["onScreen"]) {
-        if (!gameGrid.collisionCheck(currPiece->coords)) {
-            ++dynamic["move"];
+        if (!board.grid.collisionCheck(currPiece->coords)) {
             dynamic["lastPlacedRow"] = dynamic["mouseRow"];
             dynamic["lastPlacedCol"] = dynamic["mouseCol"];
-            writePiece();
-            filledRows = gameGrid.getFilledRows();
-            if (!filledRows.empty()) {
-                dynamic["lineCount"] += filledRows.size();
-                dynamic["score"] += lineScore[filledRows.size() - 1];
-                ++lineTypeCount[filledRows.size() - 1];
-                checkLevel();
-                gameGrid.clearRows(filledRows, false);
-            }
-            displayGrid.grid = gameGrid.grid;
-            updatePiece();
-            if (dynamic["move"] == pieceSeq.size() - 1) {
-                pieceSeq.push_back(nextPiece->data.name);
-            }
-            if (dynamic["move"] != record.size() - 1) {
-                truncateRecord(dynamic["move"]);
-            }
-            recordMove();
+            placePiece();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
-            Move move {lineTypeCount, gameGrid.grid};
-            eval = evaluator.evaluateMove(move);
-            evaluator.generateMoves(currPiece->data, gameGrid.grid);
+            eval = evaluator.evaluateMove(board);
         }
     }
     // Display Piece:
     if (commands["onScreen"] 
         && (dynamic["mouseRow"] != dynamic["lastPlacedRow"] || dynamic["mouseCol"] != dynamic["lastPlacedCol"])) {
-        highlightPiece(gameGrid.collisionCheck(currPiece->coords));
+        highlightPiece(board.grid.collisionCheck(currPiece->coords));
         dynamic["lastPlacedRow"] = -1;
         dynamic["lastPlacedCol"] = -1;
     }
-}
-
-void PointClick::writePiece()
-{
-    gameGrid.fillSet(currPiece->coords, currPiece->data.index);
 }
 
 void PointClick::highlightPiece(bool collision)
@@ -224,44 +196,33 @@ void PointClick::highlightPiece(bool collision)
 void PointClick::unHighlightPiece()
 {
     for (auto rowCol : currPiece->coords) {
-        displayGrid.fill(rowCol[0], rowCol[1], gameGrid.get(rowCol[0], rowCol[1]));
+        displayGrid.fill(rowCol[0], rowCol[1], board.grid.get(rowCol[0], rowCol[1]));
     }
 }
 
-void PointClick::updatePiece()
+void PointClick::placePiece()
 {
-    currPiece.swap(nextPiece);
-    if (dynamic["move"] < pieceSeq.size() - 1) {
-        nextPiece = pieceGen.getPiece(pieceSeq[dynamic["move"] + 1]);
+    board.placePiece(*currPiece);
+    if (dynamic["move"] != record.size() - 1) {
+        truncateRecord(dynamic["move"]  + 1);
     }
-    else {
-        nextPiece = pieceGen.getRandomPiece();
-    }
-    currPiece->setPosition(19, 5, 0);
-}
-
-void PointClick::recordMove()
-{
-    record.push_back(MoveRecord{
-        currPiece->data.name,
-        nextPiece->data.name,
-        gameGrid.grid,
-        dynamic["level"],
-        dynamic["lineCount"],
-        lineTypeCount});
+    record.push_back(board);
+    ++dynamic["move"];
+    updateScore();
+    updateLevel();
+    updatePiece();
+    displayGrid = board.grid;
 }
 
 void PointClick::readMove(int move)
 {
     dynamic["move"] = move;
-    auto moveRecord = record[move];
-    currPiece = pieceGen.getPiece(moveRecord.pieceName);
-    nextPiece = pieceGen.getPiece(moveRecord.nextPieceName);
-    gameGrid.grid = moveRecord.gameGrid;
-    displayGrid.grid = moveRecord.gameGrid;
-    dynamic["level"] = moveRecord.level;
-    dynamic["lineCount"] = moveRecord.lineCount;
-    lineTypeCount = moveRecord.lineTypeCount;
+    board = record[move];
+    displayGrid = board.grid;
+    updatePiece();
+    updateScore();
+    updateLevel();
+    eval = evaluator.evaluateMove(board);
 }
 
 void PointClick::truncateRecord(int moveInclusive)
@@ -272,14 +233,31 @@ void PointClick::truncateRecord(int moveInclusive)
 void PointClick::displayEvalMoves(int move_index)
 {
     auto move = evaluator.moves[move_index];
-    displayGrid.grid = move.first.grid;
+    displayGrid = move.first.grid;
+    board = move.first;
     eval = move.second;
 }
 
-void PointClick::checkLevel()
+void PointClick::updatePiece()
 {
-    if (dynamic["lineCount"] >= firstThreshold) {
-        dynamic["level"] = startLevel + (dynamic["lineCount"] - firstThreshold)/10 + 1;
+    currPiece = pieceGen.getPiece(pieceSeq[dynamic["move"]]);
+    nextPiece = pieceGen.getPiece(pieceSeq[dynamic["move"] + 1]);
+    currPiece->setPosition(19, 5, 0);
+}
+
+void PointClick::updateScore()
+{
+    dynamic["score"] = 
+        lineScore[0] * board.lineTypeCount[0] +
+        lineScore[1] * board.lineTypeCount[1] +
+        lineScore[2] * board.lineTypeCount[2] +
+        lineScore[3] * board.lineTypeCount[3];
+}
+
+void PointClick::updateLevel()
+{
+    if (board.lineCount >= firstThreshold) {
+        dynamic["level"] = startLevel + (board.lineCount - firstThreshold)/10 + 1;
         setConstants();
     }
 }
@@ -308,7 +286,7 @@ void PointClick::setCommands()
     auto mouseRowCol = getGridPosition(xyPos[0], xyPos[1]);
     dynamic["mouseRow"] = mouseRowCol[0];
     dynamic["mouseCol"] = mouseRowCol[1];
-    if (mouseRowCol[0] >= 0 && mouseRowCol[0] < gameGrid.height && mouseRowCol[1] >= 0 && mouseRowCol[1] < gameGrid.width) {
+    if (mouseRowCol[0] >= 0 && mouseRowCol[0] < displayGrid.height && mouseRowCol[1] >= 0 && mouseRowCol[1] < displayGrid.width) {
         commands["onScreen"] = true;
     }
     // Left Mouse Button:
@@ -403,12 +381,12 @@ void PointClick::setCommands()
 
 std::vector<int> PointClick::getGridPosition(double xpos, double ypos)
 {
-    int row = (bottomLeftY >= ypos) ? (bottomLeftY - ypos) / (pixelHeight/gameGrid.height) : -1;
-    int col = (bottomLeftX <= xpos) ? (xpos - bottomLeftX) / (pixelWidth/gameGrid.width) : -1;
-    if (row >= gameGrid.height) {
+    int row = (bottomLeftY >= ypos) ? (bottomLeftY - ypos) / (pixelHeight/displayGrid.height) : -1;
+    int col = (bottomLeftX <= xpos) ? (xpos - bottomLeftX) / (pixelWidth/displayGrid.width) : -1;
+    if (row >= displayGrid.height) {
         row = -1;
     }
-    if (col >= gameGrid.width) {
+    if (col >= displayGrid.width) {
         col = -1;
     }
     return std::vector<int>{row, col};

@@ -9,7 +9,7 @@
 
 #include "pieces.hpp"
 #include "grid.hpp"
-#include "record.hpp"
+#include "board.hpp"
 #include "../../ai/headers/evaluate.hpp"
 
 struct PointClick
@@ -19,15 +19,15 @@ struct PointClick
     float pixelHeight, pixelWidth, bottomLeftX, bottomLeftY;
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
-    std::vector<int> filledRows;
-    std::vector<int> lineScore, lineTypeCount;
+    Board board, boardBackup;
+    std::vector<int> lineScore;
     std::unique_ptr<Piece> currPiece, nextPiece;
     std::map<const std::string, bool>* pressedPtr;
-    std::vector<MoveRecord> record;
+    std::vector<Board> record;
     std::vector<std::string> pieceSeq;
     std::vector<double>* mousePosPtr;
     std::map<std::string, float> eval;
-    Grid gameGrid, displayGrid;
+    Grid displayGrid;
     PieceGenerator pieceGen;
     Evaluator evaluator;
 
@@ -38,15 +38,15 @@ struct PointClick
     void runFrame();
     void runGameFrame();
     void runAIFrame();
-    void writePiece();
     void highlightPiece(bool collision);
     void unHighlightPiece();
+    void placePiece();
     void updatePiece();
+    void updateLevel();
+    void updateScore();
     void setConstants();
     void setEntryDelay();
-    void checkLevel();
     void resetGame();
-    void recordMove();
     void readMove(int move);
     void truncateRecord(int moveInclusive);
     void displayEvalMoves(int move_index);

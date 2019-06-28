@@ -44,6 +44,7 @@ struct PieceGenerator
     PieceGenerator(std::vector<std::string> pieceList);
     std::unique_ptr<Piece> getRandomPiece();
     std::unique_ptr<Piece> getPiece(std::string pieceName);
+    std::vector<std::string> getRandomSequence(int length);
 };
 
 extern const std::map<const std::string, PieceData> allPieces;

@@ -2,6 +2,7 @@
 
 #include "../game/headers/grid.hpp"
 #include "../game/headers/pieces.hpp"
+#include "../game/headers/board.hpp"
 
 #include <vector>
 #include <string>
@@ -12,44 +13,39 @@
 
 Evaluator::Evaluator(int height, int width) :
 evalGrid{height, width},
-moves{}
+moves{},
+pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {}
 
-void Evaluator::generateMoves(const PieceData& data, std::vector<int>& startingGrid)
+void Evaluator::generateMoves(Board& startingBoard, Piece piece)
 {
     moves.clear();
     moves.reserve(34);
-    Piece piece{data};   
-    for (int orient = 0; orient < data.coordOffsets.size(); ++orient) {
+    Board newMove{evalGrid.height, evalGrid.width};
+    evalGrid = startingBoard.grid;
+    for (int orient = 0; orient < piece.data.coordOffsets.size(); ++orient) {
         for (int centerCol = 0; centerCol < evalGrid.width; ++centerCol) {
             piece.setPosition(evalGrid.height - 1, centerCol, orient);
             if (!evalGrid.collisionCheck(piece.coords)) {
-                auto move = Move{{0, 0, 0, 0}};
-                evalGrid.grid = startingGrid;
+                newMove = startingBoard;
                 while (!evalGrid.collisionCheck(piece.coords)) {
                     piece.translate(-1, 0);
                 }
                 piece.translate(1, 0);
-                evalGrid.fillSet(piece.coords, data.index);
-                auto filledRows = evalGrid.getFilledRows();
-                if (!filledRows.empty()) {
-                    ++move.lineTypeCount[filledRows.size() - 1];
-                    evalGrid.clearRows(filledRows);
-                }
-                move.grid = evalGrid.grid;
-                moves.emplace_back(move, evaluateMove(move));
+                newMove.placePiece(piece);
+                moves.emplace_back(newMove, evaluateMove(newMove));
                 evalGrid.clearSet(piece.coords);
             }
         }
     }
     std::sort(moves.begin(), moves.end(),  
-        [](std::pair<Move, std::map<std::string, float>> i, std::pair<Move, std::map<std::string, float>>j) 
+        [](std::pair<Board, std::map<std::string, float>> i, std::pair<Board, std::map<std::string, float>>j) 
             {return i.second["total"] > j.second["total"];});
 }
 
-std::map<std::string, float> Evaluator::evaluateMove(Move& move) {
-    auto lowerHeight = getLowerHeights(evalGrid.height, evalGrid.width, move.grid);
-    auto upperHeight = getUpperHeights(evalGrid.height, evalGrid.width, move.grid);
+std::map<std::string, float> Evaluator::evaluateMove(Board& move) {
+    auto lowerHeight = getLowerHeights(evalGrid.height, evalGrid.width, move.grid.grid);
+    auto upperHeight = getUpperHeights(evalGrid.height, evalGrid.width, move.grid.grid);
 
     float heightMin = 20;
     for (auto itr = lowerHeight.begin(); itr != lowerHeight.end() - 1; ++itr) {
@@ -64,12 +60,12 @@ std::map<std::string, float> Evaluator::evaluateMove(Move& move) {
         }
     }
     std::map<std::string, float> scores;
-    scores["holes"] = -5 * getHoles(lowerHeight, upperHeight, move.grid);
+    scores["holes"] = -5 * getHoles(lowerHeight, upperHeight, move.grid.grid);
     scores["rough"] = -0.25 * getRoughness(upperHeight);
     scores["minheight"] = 1 * (heightMin < 5) ? heightMin : 5;
     scores["maxheight"] = -1 * (heightMax > 10) ? heightMax - 10 : 0;
     scores["tetris"] = 10 * move.lineTypeCount[3];
-    scores["lines"] = -1 * move.lineTypeCount[0] + move.lineTypeCount[1] + move.lineTypeCount[2];
+    scores["lines"] = -1 * move.lineCount;
     float total = 0;
     for (auto keyValue : scores) {
         total += keyValue.second;
