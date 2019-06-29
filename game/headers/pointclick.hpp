@@ -40,7 +40,7 @@ struct PointClick
     void runAIFrame();
     void highlightPiece(bool collision);
     void unHighlightPiece();
-    void placePiece();
+    void nextMove();
     void updatePiece();
     void updateLevel();
     void updateScore();

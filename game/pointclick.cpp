@@ -97,7 +97,7 @@ void PointClick::resetGame()
 void PointClick::runFrame()
 {
     setCommands();
-    if (commands["enterAIMode"]) {
+    if (commands["enterAIMode"] && !flags["aiMode"]) {
         unHighlightPiece();
         evaluator.generateMoves(board, *currPiece);
         boardBackup = board;
@@ -105,7 +105,7 @@ void PointClick::runFrame()
         displayEvalMoves(dynamic["evalIndex"]);
         flags["aiMode"] = true;
     }
-    if (commands["exitAIMode"]) {
+    if (commands["exitAIMode"] && flags["aiMode"]) {
         board = boardBackup;
         displayGrid = boardBackup.grid;
         eval = evaluator.evaluateMove(board);
@@ -136,6 +136,15 @@ void PointClick::runAIFrame()
     }
     else if (commands["evalForward"]) {
         dynamic["evalIndex"] = (dynamic["evalIndex"] < evaluator.moves.size() - 1 ) ? dynamic["evalIndex"] + 1 : 0;
+        displayEvalMoves(dynamic["evalIndex"]);
+    }
+    // Place Piece:
+    if (commands["placeAIPiece"]) {
+        board = evaluator.moves[dynamic["evalIndex"]].first;
+        boardBackup = board;
+        nextMove();
+        evaluator.generateMoves(board, *currPiece);
+        dynamic["evalIndex"] = 0;
         displayEvalMoves(dynamic["evalIndex"]);
     }
 }
@@ -169,9 +178,9 @@ void PointClick::runGameFrame()
         if (!board.grid.collisionCheck(currPiece->coords)) {
             dynamic["lastPlacedRow"] = dynamic["mouseRow"];
             dynamic["lastPlacedCol"] = dynamic["mouseCol"];
-            placePiece();
+            board.placePiece(*currPiece);
+            nextMove();
             currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
-            eval = evaluator.evaluateMove(board);
         }
     }
     // Display Piece:
@@ -200,9 +209,8 @@ void PointClick::unHighlightPiece()
     }
 }
 
-void PointClick::placePiece()
+void PointClick::nextMove()
 {
-    board.placePiece(*currPiece);
     if (dynamic["move"] != record.size() - 1) {
         truncateRecord(dynamic["move"]  + 1);
     }
@@ -212,6 +220,7 @@ void PointClick::placePiece()
     updateLevel();
     updatePiece();
     displayGrid = board.grid;
+    eval = evaluator.evaluateMove(board);
 }
 
 void PointClick::readMove(int move)
@@ -368,6 +377,14 @@ void PointClick::setCommands()
     }
     if (!pressed["down"]) {
         flags["downHeld"] = false;
+    }
+    // Space bar:
+    if (pressed["space"] && !flags["spaceHeld"]) {
+        commands["placeAIPiece"] = true;
+        flags["spaceHeld"] = true;
+    }
+    if (!pressed["space"]) {
+        flags["spaceHeld"] = false;
     }
     // Escape key:
     if (pressed["esc"] && !flags["escHeld"]) {
