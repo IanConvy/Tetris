@@ -44,8 +44,8 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
 }
 
 std::map<std::string, float> Evaluator::evaluateMove(Board& move) {
-    auto lowerHeight = getLowerHeights(evalGrid.height, evalGrid.width, move.grid.grid);
-    auto upperHeight = getUpperHeights(evalGrid.height, evalGrid.width, move.grid.grid);
+    auto lowerHeight = getLowerHeights(move.grid);
+    auto upperHeight = getUpperHeights(move.grid);
 
     float heightMin = 20;
     for (auto itr = lowerHeight.begin(); itr != lowerHeight.end() - 1; ++itr) {
@@ -60,12 +60,13 @@ std::map<std::string, float> Evaluator::evaluateMove(Board& move) {
         }
     }
     std::map<std::string, float> scores;
-    scores["holes"] = -5 * getHoles(lowerHeight, upperHeight, move.grid.grid);
-    scores["rough"] = -0.25 * getRoughness(upperHeight);
-    scores["minheight"] = 1 * (heightMin < 5) ? heightMin : 5;
-    scores["maxheight"] = -1 * (heightMax > 10) ? heightMax - 10 : 0;
-    scores["tetris"] = 10 * move.lineTypeCount[3];
+    scores["holes"] = -5 * getHoles(move.grid);
+    scores["rough"] = -0.25 * getRoughness(upperHeight, 3);
+    // scores["minheight"] = 1 * (heightMin < 5) ? heightMin : 5;
+    scores["maxheight"] = -0.75 * ((heightMax > 10) ? heightMax - 10 : 0);
+    scores["tetris"] = 15 * move.lineTypeCount[3];
     scores["lines"] = -1 * move.lineCount;
+    scores["tetrisready"] = 3 * tetrisReady(move.grid, upperHeight); 
     float total = 0;
     for (auto keyValue : scores) {
         total += keyValue.second;
@@ -74,12 +75,12 @@ std::map<std::string, float> Evaluator::evaluateMove(Board& move) {
     return scores;
 }
 
-std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid)
+std::vector<int> getLowerHeights(Grid& grid)
 {
     std::vector<int> heights;
-    for (int col = 0; col < width; ++col) {
+    for (int col = 0; col < grid.width; ++col) {
         int currHeight = 0;
-        for (auto itr = grid.begin() + col; *itr != 0 && currHeight < height; itr += width) {
+        for (auto itr = grid.grid.begin() + col; *itr != 0 && currHeight < grid.height; itr += grid.width) {
             ++currHeight;
         }
         heights.push_back(currHeight);
@@ -87,12 +88,12 @@ std::vector<int> getLowerHeights(int height, int width, std::vector<int>& grid)
     return heights;
 }
 
-std::vector<int> getUpperHeights(int height, int width, std::vector<int>& grid)
+std::vector<int> getUpperHeights(Grid& grid)
 {
     std::vector<int> heights;
-    for (int col = 0; col < width; ++col) {
-        int currHeight = height - 1;
-        for (auto itr = grid.end() - width  + col; *itr == 0 && currHeight >= 0; itr -= width) {
+    for (int col = 0; col < grid.width; ++col) {
+        int currHeight = grid.height - 1;
+        for (auto itr = grid.grid.end() - grid.width  + col; *itr == 0 && currHeight >= 0; itr -= grid.width) {
             --currHeight;
         }
         heights.push_back(currHeight + 1);
@@ -100,27 +101,61 @@ std::vector<int> getUpperHeights(int height, int width, std::vector<int>& grid)
     return heights;
 }
 
-int getRoughness(std::vector<int>& upperHeights)
+int getRoughness(std::vector<int>& upperHeights, int threshold)
 {
     int roughness = 0;
     for (auto itr = upperHeights.begin() + 1; itr != upperHeights.end(); ++itr) {
-        roughness += std::abs(*itr - *(itr - 1));
+        int delta = std::abs(*itr - *(itr - 1));
+        if (delta >= threshold) {
+            roughness += delta;
+        }
     }
     return roughness;
 }
 
-int getHoles(std::vector<int>& lowerHeights, std::vector<int>& upperHeights, std::vector<int>& grid)
+int getHoles(Grid& grid)
 {
     int holes = 0;
-    int width = lowerHeights.size();
-    for (int col = 0; col < width; ++col) {
-        auto startItr = grid.begin() + width*lowerHeights[col] + col;
-        auto endItr = grid.begin() + width*upperHeights[col] + col;
-        for (; startItr != endItr; startItr += width) {
-            if (*startItr == 0) {
-                ++holes;
-            }
+    for (auto itr = grid.grid.begin(); itr != grid.grid.end() - grid.width; ++itr) {
+        if (*itr == 0 && *(itr + grid.width) != 0) {
+            ++holes;
         }
     }
     return holes;
 }
+
+bool tetrisReady(Grid grid, std::vector<int> upperHeights)
+{
+    bool ready = false;
+    for (int col = 0; col < grid.width; ++col) {
+        int floor = upperHeights[col];
+        if ((floor + 3) < grid.height) {
+            std::vector<std::vector<int>> blocks = {
+                {floor, col}, {floor + 1, col}, {floor + 2, col}, {floor + 3, col}};
+            grid.fillSet(blocks, 1);
+            auto filled = grid.getFilledRows();
+            if (filled.size() == 4) {
+                return true;
+            }
+            grid.clearSet(blocks);
+        }
+    }
+    return false;
+}
+
+
+// int getHoles(std::vector<int>& lowerHeights, std::vector<int>& upperHeights, std::vector<int>& grid)
+// {
+//     int holes = 0;
+//     int width = lowerHeights.size();
+//     for (int col = 0; col < width; ++col) {
+//         auto startItr = grid.begin() + width*lowerHeights[col] + col;
+//         auto endItr = grid.begin() + width*upperHeights[col] + col;
+//         for (; startItr != endItr; startItr += width) {
+//             if (*startItr == 0) {
+//                 ++holes;
+//             }
+//         }
+//     }
+//     return holes;
+// }
