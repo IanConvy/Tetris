@@ -49,7 +49,7 @@ struct PointClick
     void resetGame();
     void readMove(int move);
     void truncateRecord(int moveInclusive);
-    void displayEvalMoves(int move_index);
+    void displayEvalMoves(unsigned int move_index);
     std::vector<int> getGridPosition(double xpos, double ypos);
 };
 

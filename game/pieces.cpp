@@ -9,18 +9,27 @@ PieceData::PieceData(
     std::string name,
     const unsigned int pieceIndex,
     const int numOrients,
-    std::vector<std::vector<std::vector<int>>> coordOffsets) :
+    std::vector<std::vector<std::vector<int>>> coordOffsets,
+    std::vector<std::vector<int>> bottomSurf,
+    std::vector<std::vector<int>> topSurf,
+    std::vector<std::vector<int>> sideHeights) :
 name{name}, 
 index{pieceIndex},
 numOrients{numOrients},
-coordOffsets{coordOffsets}
+coordOffsets{coordOffsets},
+bottomSurf{bottomSurf},
+topSurf{topSurf},
+sideHeights{sideHeights}
 {}
 
 PieceData::PieceData() :
 name{},
 index{0},
 numOrients{1},
-coordOffsets{{{{0, 0}, {0, 0}, {0, 0}, {0, 0}}}}
+coordOffsets{{{{0, 0}, {0, 0}, {0, 0}, {0, 0}}}},
+bottomSurf{{}},
+topSurf{{}},
+sideHeights{{1, -1}}
 {}
 
 Piece::Piece() :
@@ -108,7 +117,13 @@ const std::map<const std::string, PieceData> allPieces{
         {{{0, 0}, {0, 1}, {0, -1}, {-1, -1}},
         {{0, 0}, {-1, 0}, {1, 0}, {1, -1}},
         {{0, 0}, {0, -1}, {0, 1}, {1, 1}},
-        {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}}}
+        {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}}},
+        // Bottom Surface
+        {{1, 0}, {-2}, {0, 0}, {0}},
+        // Top Surface
+        {{0, 0}, {0}, {0, 1}, {-2}},
+        // Side Heights
+        {{2, -1}, {1, -3}, {1, -2}, {3, -1}}
         }
     },
     {"llPiece", {
@@ -119,7 +134,13 @@ const std::map<const std::string, PieceData> allPieces{
         {{{0, 0}, {0, -1}, {0, 1}, {-1, 1}},
         {{0, 0}, {1, 0}, {-1, 0}, {-1, -1}},
         {{0, 0}, {0, 1}, {0, -1}, {1, -1}},
-        {{0, 0}, {-1, 0}, {1, 0}, {1, 1}}} 
+        {{0, 0}, {-1, 0}, {1, 0}, {1, 1}}}, 
+        // Bottom Surface
+        {{0, -1}, {0}, {0, 0}, {2}},
+        // Top surface
+        {{0, 0}, {2}, {-1, 0}, {0}},
+        // Side Heights
+        {{1, -2}, {1, -3}, {2, -1}, {3, -1}}
         }   
     },
     {"srPiece", {
@@ -128,7 +149,13 @@ const std::map<const std::string, PieceData> allPieces{
         2, // Number of orientations
         // Offsets from center
         {{{0, 0}, {0, 1}, {-1, -1}, {-1, 0}},
-        {{0, 0}, {1, 0}, {0, 1}, {-1, 1}}}
+        {{0, 0}, {1, 0}, {0, 1}, {-1, 1}}},
+        // Bottom Surface
+        {{0, 1}, {-1}},
+        // Top Surface
+        {{1, 0}, {-1}},
+        // Side Heights
+        {{1, -1}, {2, -2}}
         }
     },
     {"slPiece", {
@@ -137,7 +164,13 @@ const std::map<const std::string, PieceData> allPieces{
         2, // Number of orientations
         // Offsets from center
         {{{0, 0}, {0, -1}, {-1, 0}, {-1, 1}},
-        {{0, 0}, {-1, 0}, {0, 1}, {1, 1}}}
+        {{0, 0}, {-1, 0}, {0, 1}, {1, 1}}},
+        // Bottom Surface
+        {{-1, 0}, {1}},
+        // Top Surface
+        {{0, -1}, {1}},
+        // Side Heights
+        {{1, -1}, {2, -2}}
         }
     },
     {"iPiece", {
@@ -146,7 +179,13 @@ const std::map<const std::string, PieceData> allPieces{
         2, // Number of orientations
         // Row offsets from center
         {{{0, 0}, {0, -2}, {0, -1}, {0, 1}},
-        {{0, 0}, {2, 0}, {1, 0}, {-1, 0}}}
+        {{0, 0}, {2, 0}, {1, 0}, {-1, 0}}},
+        // Bottom Surface
+        {{0, 0, 0, 0}, {}},
+        // Top Surface
+        {{0, 0, 0, 0}, {}},
+        // Side Heights
+        {{1, -1}, {4, -4}}
         }
     },
     {"tPiece", {
@@ -157,7 +196,13 @@ const std::map<const std::string, PieceData> allPieces{
         {{{0, 0}, {-1, 0}, {0, 1}, {0, -1}},
         {{0, 0}, {0, -1}, {-1, 0}, {1, 0}},
         {{0, 0}, {1, 0}, {0, -1}, {0, 1}},
-        {{0, 0}, {0, 1}, {1, 0}, {-1, 0}}}
+        {{0, 0}, {0, 1}, {1, 0}, {-1, 0}}},
+        // Bottom Surface
+        {{-1, 1}, {-1}, {0, 0}, {1}},
+        // Top Surface
+        {{0, 0}, {1}, {1, -1}, {-1}},
+        // Side Heights
+        {{1, -1}, {1, -3}, {1, -1}, {3, -1}}
         } 
     },
     {"sqPiece", {
@@ -165,7 +210,13 @@ const std::map<const std::string, PieceData> allPieces{
         7, // Index
         1, // Number of orientations
         // Offsets from center
-        {{{0, 0}, {-1, 0}, {-1, -1}, {0, -1}}}
+        {{{0, 0}, {-1, 0}, {-1, -1}, {0, -1}}},
+        // Bottom Surface
+        {{0}},
+        // Top Surface
+        {{0}},
+        // Side Heights
+        {{2, -2}}
         }
     }
 };

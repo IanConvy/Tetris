@@ -12,13 +12,17 @@ struct PieceData
     const unsigned int index;
     const int numOrients;
     std::vector<std::vector<std::vector<int>>> coordOffsets;
+    std::vector<std::vector<int>> bottomSurf, topSurf, sideHeights;
 
     PieceData();
     PieceData(
         std::string name,
         const unsigned int index,
         const int numOrients,
-        std::vector<std::vector<std::vector<int>>> coordOffsets
+        std::vector<std::vector<std::vector<int>>> coordOffsets,
+        std::vector<std::vector<int>> bottomSurf,
+        std::vector<std::vector<int>> topSurf,
+        std::vector<std::vector<int>> sideHeights
     );
 };
 

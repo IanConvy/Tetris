@@ -90,8 +90,7 @@ void PointClick::resetGame()
     setConstants();
     record.clear();
     record.push_back(board);
-    eval = evaluator.evaluateMove(board);
-    evaluator.generateMoves(board, *currPiece);
+    eval = positionEval(board);
 }
 
 void PointClick::runFrame()
@@ -108,7 +107,7 @@ void PointClick::runFrame()
     if (commands["exitAIMode"] && flags["aiMode"]) {
         board = boardBackup;
         displayGrid = boardBackup.grid;
-        eval = evaluator.evaluateMove(board);
+        eval = positionEval(board);
         flags["aiMode"] = false;
     }
     if (flags["aiMode"]) {
@@ -129,23 +128,25 @@ void PointClick::runFrame()
 
 void PointClick::runAIFrame()
 {
-    // See Eval Moves:
-    if (commands["evalBackward"]) {
-        dynamic["evalIndex"] = (dynamic["evalIndex"] > 0) ? dynamic["evalIndex"] - 1 : evaluator.moves.size() - 1;
-        displayEvalMoves(dynamic["evalIndex"]);
-    }
-    else if (commands["evalForward"]) {
-        dynamic["evalIndex"] = (dynamic["evalIndex"] < evaluator.moves.size() - 1 ) ? dynamic["evalIndex"] + 1 : 0;
-        displayEvalMoves(dynamic["evalIndex"]);
-    }
-    // Place Piece:
-    if (commands["placeAIPiece"]) {
-        board = evaluator.moves[dynamic["evalIndex"]].first;
-        boardBackup = board;
-        nextMove();
-        evaluator.generateMoves(board, *currPiece);
-        dynamic["evalIndex"] = 0;
-        displayEvalMoves(dynamic["evalIndex"]);
+    if (!evaluator.moves.empty()) {
+        // See Eval Moves:
+        if (commands["evalBackward"]) {
+            dynamic["evalIndex"] = (dynamic["evalIndex"] > 0) ? dynamic["evalIndex"] - 1 : evaluator.moves.size() - 1;
+            displayEvalMoves(dynamic["evalIndex"]);
+        }
+        else if (commands["evalForward"]) {
+            dynamic["evalIndex"] = (dynamic["evalIndex"] < evaluator.moves.size() - 1 ) ? dynamic["evalIndex"] + 1 : 0;
+            displayEvalMoves(dynamic["evalIndex"]);
+        }
+        // Place Piece:
+        if (commands["placeAIPiece"]) {
+            board = evaluator.moves[dynamic["evalIndex"]].first;
+            boardBackup = board;
+            nextMove();
+            evaluator.generateMoves(board, *currPiece);
+            dynamic["evalIndex"] = 0;
+            displayEvalMoves(dynamic["evalIndex"]);
+        }
     }
 }
 
@@ -220,7 +221,7 @@ void PointClick::nextMove()
     updateLevel();
     updatePiece();
     displayGrid = board.grid;
-    eval = evaluator.evaluateMove(board);
+    eval = positionEval(board);
 }
 
 void PointClick::readMove(int move)
@@ -231,7 +232,7 @@ void PointClick::readMove(int move)
     updatePiece();
     updateScore();
     updateLevel();
-    eval = evaluator.evaluateMove(board);
+    eval = positionEval(board);
 }
 
 void PointClick::truncateRecord(int moveInclusive)
@@ -239,12 +240,14 @@ void PointClick::truncateRecord(int moveInclusive)
     record.erase(record.begin() + moveInclusive, record.end()); 
 }
 
-void PointClick::displayEvalMoves(int move_index)
+void PointClick::displayEvalMoves(unsigned int move_index)
 {
-    auto move = evaluator.moves[move_index];
-    displayGrid = move.first.grid;
-    board = move.first;
-    eval = move.second;
+    if (move_index < evaluator.moves.size()) {
+        auto move = evaluator.moves[move_index];
+        displayGrid = move.first.grid;
+        board = move.first;
+        eval = positionEval(move.first);
+    }
 }
 
 void PointClick::updatePiece()

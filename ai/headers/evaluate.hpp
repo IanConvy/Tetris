@@ -20,13 +20,25 @@ struct Evaluator
 
     Evaluator(int height, int width);
     void generateMoves(Board& startingBoard, Piece piece);
-    std::map<std::string, float> evaluateMove(Board& move);
 };
 
 std::vector<int> getLowerHeights(Grid& grid);
 std::vector<int> getUpperHeights(Grid& grid);
-int getRoughness(std::vector<int>& upperHeights, int threshold);
+int getRoughness(Grid& grid, int threshold);
 int getHoles(Grid& grid);
-bool tetrisReady(Grid grid, std::vector<int> upperHeights);
+bool tetrisReady(Grid grid);
+std::vector<int> getSurface(Grid& grid);
+void getConnectedSurfaces(std::vector<int>& surface, Piece piece, std::vector<std::vector<int>>& container);
+int surfaceEval(std::vector<int>& firstSurface, unsigned int depth, PieceGenerator& pieceGen);
+bool colClear(Grid& grid, int col);
+int countValleys(Grid& grid, int well);
+int getMinHeight(Grid& grid, int well);
+void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container);
+float evaluateMove(Board& move, PieceGenerator& pieceGen);
+std::map<std::string, float> positionEval(Board& move);
+float getHoleScore(Grid& grid);
+int getJagged(Grid& grid, int well);
+float getAverageHeight(Grid& grid);
+
 
 #endif
