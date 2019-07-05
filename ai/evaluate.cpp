@@ -63,7 +63,7 @@ std::map<std::string, float> positionEval(Board& move)
     scores["tetris"] = 10 * move.lineTypeCount[3];
     scores["well"] = colClear(move.grid, well);
     scores["minheight"] = (minHeight <= 10) ? 1 * minHeight : 10;
-    scores["avgheight"] = (avgHeight >= 7) ? -1 * avgHeight : 0;
+    scores["avgheight"] = (avgHeight >= 10) ? -1 * avgHeight : 0;
     float eval = 0;
     for (auto& evalScore : scores) {
         eval += evalScore.second;
