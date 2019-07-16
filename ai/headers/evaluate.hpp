@@ -33,12 +33,18 @@ int surfaceEval(std::vector<int>& firstSurface, unsigned int depth, PieceGenerat
 bool colClear(Grid& grid, int col);
 int countValleys(Grid& grid, int well);
 int getMinHeight(Grid& grid, int well);
+int getHighestHole(Grid& grid);
+int getHoleDepth(Grid& grid, int row);
+int getNumFilled(Grid& grid, int row);
 void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container);
 float evaluateMove(Board& move, PieceGenerator& pieceGen);
+std::map<std::string, float> burnEval(Board& move);
 std::map<std::string, float> positionEval(Board& move);
 float getHoleScore(Grid& grid);
 int getJagged(Grid& grid, int well);
 float getAverageHeight(Grid& grid);
+int getMaxHeight(Grid& grid);
+bool pruneMove(Grid& grid);
 
 
 #endif

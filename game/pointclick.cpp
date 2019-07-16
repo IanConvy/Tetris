@@ -90,7 +90,7 @@ void PointClick::resetGame()
     setConstants();
     record.clear();
     record.push_back(board);
-    eval = positionEval(board);
+    eval = (getHoles(board.grid) > 0) ? burnEval(board) : positionEval(board);
 }
 
 void PointClick::runFrame()
@@ -107,7 +107,7 @@ void PointClick::runFrame()
     if (commands["exitAIMode"] && flags["aiMode"]) {
         board = boardBackup;
         displayGrid = boardBackup.grid;
-        eval = positionEval(board);
+        eval = (getHoles(board.grid) > 0) ? burnEval(board) : positionEval(board);
         flags["aiMode"] = false;
     }
     if (flags["aiMode"]) {
@@ -221,7 +221,7 @@ void PointClick::nextMove()
     updateLevel();
     updatePiece();
     displayGrid = board.grid;
-    eval = positionEval(board);
+    eval = (getHoles(board.grid) > 0) ? burnEval(board) : positionEval(board);
 }
 
 void PointClick::readMove(int move)
@@ -232,7 +232,7 @@ void PointClick::readMove(int move)
     updatePiece();
     updateScore();
     updateLevel();
-    eval = positionEval(board);
+    eval = (getHoles(board.grid) > 0) ? burnEval(board) : positionEval(board);
 }
 
 void PointClick::truncateRecord(int moveInclusive)
@@ -246,7 +246,7 @@ void PointClick::displayEvalMoves(unsigned int move_index)
         auto move = evaluator.moves[move_index];
         displayGrid = move.first.grid;
         board = move.first;
-        eval = positionEval(move.first);
+        eval = (getHoles(board.grid) > 0) ? burnEval(board) : positionEval(board);
     }
 }
 

@@ -34,21 +34,35 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
 }
 
 float evaluateMove(Board& move, PieceGenerator& pieceGen) {
-    std::vector<std::vector<Board>> pieceMoves(7, std::vector<Board>{});
-    auto pieceList = pieceGen.pieceList;
-    for (int i = 0; i < pieceList.size(); ++i) {
-        getMoves(move, *pieceGen.getPiece(pieceList[i]), pieceMoves[i]);
+    // std::vector<std::vector<Board>> pieceMoves(7, std::vector<Board>{});
+    // auto pieceList = pieceGen.pieceList;
+    // for (int i = 0; i < pieceList.size(); ++i) {
+    //     getMoves(move, *pieceGen.getPiece(pieceList[i]), pieceMoves[i]);
+    // }
+    // float minPieceScore = 100000;
+    // for (auto moves : pieceMoves) {
+    //     float bestScore = -10000;
+    //     for (auto move : moves) {
+    //         float score = 0;
+    //         if (getHoles(move.grid) > 0) {
+    //             score = burnEval(move)["total"];
+    //         }
+    //         else {
+    //             score = positionEval(move)["total"];
+    //         }
+    //         bestScore = (score > bestScore) ? score : bestScore;
+    //     }
+    //     minPieceScore = (bestScore < minPieceScore) ? bestScore : minPieceScore;
+    // }
+    // return minPieceScore;
+    float score = 0;
+    if (getHoles(move.grid) > 0) {
+        score = burnEval(move)["total"];
     }
-    float minPieceScore = 100000;
-    for (auto moves : pieceMoves) {
-        float bestScore = -10000;
-        for (auto move : moves) {
-            float score = positionEval(move)["total"];
-            bestScore = (score > bestScore) ? score : bestScore;
-        }
-        minPieceScore = (bestScore < minPieceScore) ? bestScore : minPieceScore;
+    else {
+        score = positionEval(move)["total"];
     }
-    return minPieceScore;
+    return score;
 }
 
 std::map<std::string, float> positionEval(Board& move)
@@ -59,17 +73,76 @@ std::map<std::string, float> positionEval(Board& move)
     auto avgHeight = getAverageHeight(move.grid);
     scores["holes"] = -10 * getHoles(move.grid);
     scores["surface"] = -0.25 * getRoughness(move.grid, 2);
-    // scores["lines"] = -0.25 * move.lineCount;
-    scores["tetris"] = 10 * move.lineTypeCount[3];
+    scores["lines"] = -0.25 * move.lineCount;
+    scores["tetris"] = 20 * move.lineTypeCount[3];
     scores["well"] = colClear(move.grid, well);
     scores["minheight"] = (minHeight <= 10) ? 1 * minHeight : 10;
     scores["avgheight"] = (avgHeight >= 10) ? -1 * avgHeight : 0;
+    scores["valleys"] = -5 * countValleys(move.grid, well);
     float eval = 0;
     for (auto& evalScore : scores) {
         eval += evalScore.second;
     }
     scores["total"] = eval;
     return scores;
+}
+
+std::map<std::string, float> burnEval(Board& move)
+{
+    std::map<std::string, float> scores;
+    int highestHole = getHighestHole(move.grid);
+    int depth = getHoleDepth(move.grid, highestHole);
+    scores["high"] = -50 * (highestHole + 1);
+    scores["depth"] = -1 * depth;
+    scores["filled"] = 1 * getNumFilled(move.grid, highestHole);
+    scores["surface"] = -0.25 * getRoughness(move.grid, 2);
+    scores["maxheight"] = -0.25 * getMaxHeight(move.grid); 
+    scores["valleys"] = -5 * countValleys(move.grid, -1);
+        float eval = 0;
+    for (auto& evalScore : scores) {
+        eval += evalScore.second;
+    }
+    scores["total"] = eval - 1000;
+    return scores;
+}
+
+int getHighestHole(Grid& grid)
+{
+    int firstHoleRow = 0;
+    for (int i = grid.grid.size() - grid.width - 1; i >= 0; --i) {
+        if (grid.grid[i] == 0 && grid.grid[i + grid.width] != 0) {
+            firstHoleRow = i / grid.width;
+            break;
+        }
+    }
+    return firstHoleRow;
+}
+
+int getHoleDepth(Grid& grid, int row)
+{
+    auto endItr =  grid.grid.begin() + (row + 1)*grid.width;
+    int depth = 0;
+    for (auto itr = grid.grid.begin() + row*grid.width; itr < endItr; ++itr) {
+        if (*itr == 0 && *(itr + grid.width) != 0) {
+            for (auto colItr = itr + grid.width; colItr < grid.grid.end(); colItr += grid.width) {
+                if (*colItr != 0) {
+                    ++depth;
+                }
+            }
+        }
+    }
+    return depth;
+}
+
+int getNumFilled(Grid& grid, int row) {
+    auto endItr =  grid.grid.begin() + (row + 1)*grid.width;
+    int filled = 0;
+    for (auto itr = grid.grid.begin() + row*grid.width; itr < endItr && itr < itr + grid.width; ++itr) {
+        if (*itr != 0) {
+            ++filled;
+        }
+    }
+    return filled;
 }
 
 void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container) {
@@ -209,8 +282,6 @@ int getHoles(Grid& grid)
     return holes;
 }
 
-
-
 bool tetrisReady(Grid grid)
 {
     auto upperHeights = getUpperHeights(grid);
@@ -272,6 +343,18 @@ int getMinHeight(Grid& grid, int well)
     return minHeight;
 }
 
+int getMaxHeight(Grid& grid)
+{
+    int maxHeight = 0;
+    auto heights = getUpperHeights(grid);
+    for (int i = 0; i < heights.size(); ++i) {
+        if (heights[i] > maxHeight) {
+            maxHeight = heights[i];
+        }
+    }
+    return maxHeight;
+}
+
 float getAverageHeight(Grid& grid)
 {
     auto heights = getUpperHeights(grid);
@@ -281,19 +364,3 @@ float getAverageHeight(Grid& grid)
     }
     return sum / heights.size();
 }
-
-// int getHoles(std::vector<int>& lowerHeights, std::vector<int>& upperHeights, std::vector<int>& grid)
-// {
-//     int holes = 0;
-//     int width = lowerHeights.size();
-//     for (int col = 0; col < width; ++col) {
-//         auto startItr = grid.begin() + width*lowerHeights[col] + col;
-//         auto endItr = grid.begin() + width*upperHeights[col] + col;
-//         for (; startItr != endItr; startItr += width) {
-//             if (*startItr == 0) {
-//                 ++holes;
-//             }
-//         }
-//     }
-//     return holes;
-// }
