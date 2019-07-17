@@ -13,6 +13,7 @@
 #include <iostream>
 
 Evaluator::Evaluator(int height, int width) :
+well{width - 1},
 evalGrid{height, width},
 moves{},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
@@ -23,9 +24,10 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
     moves.clear();
     moves.reserve(34);
     std::vector<Board> newMoves;
+    well = findWell(startingBoard.grid, well);
     getMoves(startingBoard, piece, newMoves);
     for (auto move : newMoves) {
-        std::map<std::string, float> score{{"total", evaluateMove(move, pieceGen)}};
+        std::map<std::string, float> score{{"total", evaluateMove(move, pieceGen, well)}};
         moves.emplace_back(move, score);
     }
     std::sort(moves.begin(), moves.end(),  
@@ -33,7 +35,7 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
             {return i.second["total"] > j.second["total"];});
 }
 
-float evaluateMove(Board& move, PieceGenerator& pieceGen) {
+float evaluateMove(Board& move, PieceGenerator& pieceGen, int well) {
     // std::vector<std::vector<Board>> pieceMoves(7, std::vector<Board>{});
     // auto pieceList = pieceGen.pieceList;
     // for (int i = 0; i < pieceList.size(); ++i) {
@@ -57,18 +59,17 @@ float evaluateMove(Board& move, PieceGenerator& pieceGen) {
     // return minPieceScore;
     float score = 0;
     if (getHoles(move.grid) > 0) {
-        score = burnEval(move)["total"];
+        score = burnEval(move, well)["total"];
     }
     else {
-        score = positionEval(move)["total"];
+        score = positionEval(move, well)["total"];
     }
     return score;
 }
 
-std::map<std::string, float> positionEval(Board& move)
+std::map<std::string, float> positionEval(Board& move, int well)
 {
     std::map<std::string, float> scores;
-    int well = 9;
     auto minHeight = getMinHeight(move.grid, well);
     auto avgHeight = getAverageHeight(move.grid);
     scores["holes"] = -10 * getHoles(move.grid);
@@ -87,23 +88,36 @@ std::map<std::string, float> positionEval(Board& move)
     return scores;
 }
 
-std::map<std::string, float> burnEval(Board& move)
+std::map<std::string, float> burnEval(Board& move, int well)
 {
     std::map<std::string, float> scores;
     int highestHole = getHighestHole(move.grid);
     int depth = getHoleDepth(move.grid, highestHole);
-    scores["high"] = -50 * (highestHole + 1);
+    scores["high"] = -20 * (highestHole + 1);
     scores["depth"] = -1 * depth;
     scores["filled"] = 1 * getNumFilled(move.grid, highestHole);
     scores["surface"] = -0.25 * getRoughness(move.grid, 2);
-    scores["maxheight"] = -0.25 * getMaxHeight(move.grid); 
-    scores["valleys"] = -5 * countValleys(move.grid, -1);
+    scores["maxheight"] = -0.25 * getMaxHeight(move.grid) * getMaxHeight(move.grid); 
+    scores["valleys"] = -5 * countValleys(move.grid, well);
         float eval = 0;
     for (auto& evalScore : scores) {
         eval += evalScore.second;
     }
     scores["total"] = eval - 1000;
     return scores;
+}
+
+int findWell(Grid& grid, int oldWell)
+{
+    int well = oldWell;
+    auto heights = getUpperHeights(grid);
+    for (int col = heights.size() - 1; col >= 0; --col) {
+        if (heights[col] == 0) {
+            well = col;
+            break;
+        }
+    }
+    return well;
 }
 
 int getHighestHole(Grid& grid)
@@ -157,64 +171,6 @@ void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container) 
                 piece.translate(1, 0);
                 newMove.placePiece(piece);
                 container.push_back(newMove);
-            }
-        }
-    }
-}
-
-int surfaceEval(std::vector<int>& firstSurface, unsigned int depth, PieceGenerator& pieceGen)
-{
-    auto pieceList = pieceGen.pieceList;
-    std::map<const std::string, std::vector<std::vector<int>>> surfaces, newSurfaces;
-    surfaces[""] = {firstSurface};
-    int eval = 0;
-    for (; eval < depth; ++eval) {
-        newSurfaces.clear();
-        for (auto pieceSurfaces : surfaces) {
-            for (auto pieceName : pieceList) {
-                auto newName = pieceSurfaces.first + pieceName;
-                newSurfaces[newName] = {};
-                bool anySurface = false;
-                for (auto surface : pieceSurfaces.second) {
-                    getConnectedSurfaces(surface, *pieceGen.getPiece(pieceName), newSurfaces[newName]);
-                    if (!newSurfaces[newName].empty()) {
-                        anySurface = true;
-                    }
-                }
-                if (!anySurface) {
-                    return eval;
-                }
-            }
-        }
-        surfaces = newSurfaces;
-    }
-    return eval;
-}
-
-void getConnectedSurfaces(std::vector<int>& surface, Piece piece, std::vector<std::vector<int>>& container)
-{
-    for (int orient = 0; orient < piece.data.numOrients; ++orient) {
-        auto bottom = piece.data.bottomSurf[orient];
-        for (int startPos = 0; startPos < surface.size() - bottom.size(); ++startPos) {
-            bool match = true;
-            for (int offset = 0; offset < bottom.size(); ++offset) {
-                if (surface[startPos + offset] != bottom[offset]) {
-                    match = false;
-                }
-            }
-            if (match) {
-                std::vector<int> newSurface = surface;
-                auto top = piece.data.topSurf[orient];
-                if (startPos > 0) {
-                    newSurface[startPos - 1] += piece.data.sideHeights[orient][0];
-                }
-                for (int offset = 0; offset < top.size(); ++offset) {
-                    newSurface[startPos + offset] = top[offset];
-                }
-                if (startPos + top.size() < newSurface.size()) {
-                    newSurface[startPos + top.size()] += piece.data.sideHeights[orient][1];
-                }
-                container.push_back(newSurface);
             }
         }
     }

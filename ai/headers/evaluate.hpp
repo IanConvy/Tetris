@@ -14,6 +14,7 @@
 
 struct Evaluator
 {
+    int well;
     Grid evalGrid;
     std::vector<std::pair<Board, std::map<std::string, float>>> moves;
     PieceGenerator pieceGen;
@@ -22,29 +23,25 @@ struct Evaluator
     void generateMoves(Board& startingBoard, Piece piece);
 };
 
+float evaluateMove(Board& move, PieceGenerator& pieceGen, int well);
+std::map<std::string, float> burnEval(Board& move, int well);
+std::map<std::string, float> positionEval(Board& move, int well);
+void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container);
+
+int findWell(Grid& grid, int oldWell);
 std::vector<int> getLowerHeights(Grid& grid);
 std::vector<int> getUpperHeights(Grid& grid);
 int getRoughness(Grid& grid, int threshold);
 int getHoles(Grid& grid);
 bool tetrisReady(Grid grid);
 std::vector<int> getSurface(Grid& grid);
-void getConnectedSurfaces(std::vector<int>& surface, Piece piece, std::vector<std::vector<int>>& container);
-int surfaceEval(std::vector<int>& firstSurface, unsigned int depth, PieceGenerator& pieceGen);
 bool colClear(Grid& grid, int col);
-int countValleys(Grid& grid, int well);
-int getMinHeight(Grid& grid, int well);
 int getHighestHole(Grid& grid);
 int getHoleDepth(Grid& grid, int row);
 int getNumFilled(Grid& grid, int row);
-void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container);
-float evaluateMove(Board& move, PieceGenerator& pieceGen);
-std::map<std::string, float> burnEval(Board& move);
-std::map<std::string, float> positionEval(Board& move);
-float getHoleScore(Grid& grid);
-int getJagged(Grid& grid, int well);
+int countValleys(Grid& grid, int well);
 float getAverageHeight(Grid& grid);
 int getMaxHeight(Grid& grid);
-bool pruneMove(Grid& grid);
-
+int getMinHeight(Grid& grid, int well);
 
 #endif
