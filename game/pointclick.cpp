@@ -46,7 +46,7 @@ board{20, 10},
 boardBackup{20, 10},
 displayGrid{20, 10},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
-evaluator{20, 10}
+evaluator{20, 10, 5, 0, 5}
 {
     pixelHeight = 610;
     pixelWidth = x1 - x0;
@@ -91,6 +91,7 @@ void PointClick::resetGame()
     record.clear();
     record.push_back(board);
     eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+    evaluator.setGravity(constants["setGravity"]);
 }
 
 void PointClick::runFrame()

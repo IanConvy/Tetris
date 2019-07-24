@@ -1,5 +1,6 @@
 #include "headers/evaluate.hpp"
 
+#include "headers/move.hpp"
 #include "../game/headers/grid.hpp"
 #include "../game/headers/pieces.hpp"
 #include "../game/headers/board.hpp"
@@ -12,12 +13,39 @@
 #include <cmath>
 #include <iostream>
 
-Evaluator::Evaluator(int height, int width) :
+void printGrid(int height, int width, std::vector<int>& grid)
+{
+    for (int row = height - 1; row >= 0; --row) {
+        auto itr = grid.begin() + width*row;
+        for (int col = 0; col < width; ++col) {
+            std::cout << *itr << " ";
+            ++itr;
+        } 
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
+}
+
+Evaluator::Evaluator(int height, int width, int das, int gravity, int startCol) :
 well{width - 1},
-evalGrid{height, width},
+das{das},
+gravity{gravity},
+startCol{startCol},
 moves{},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
 {}
+
+// void Evaluator::placePiece(Piece& piece)
+// {
+//     board.placePiece(piece);
+//     for (auto pieceName : pieceGen.pieceList) {
+//         auto offsets = pieceGen.getPiece(pieceName)->data.coordOffsets;
+//         auto maps = collisionMaps[pieceName];
+//         for (int orient = 0; orient < offsets.size(); ++orient) {
+//             addCollisionBlocks(maps[orient], piece.coords, offsets[orient]);
+//         }
+//     }
+// }
 
 void Evaluator::generateMoves(Board& startingBoard, Piece piece)
 {
@@ -25,7 +53,7 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
     moves.reserve(34);
     std::vector<Board> newMoves;
     well = findWell(startingBoard.grid, well);
-    getMoves(startingBoard, piece, newMoves);
+    getMoves(startingBoard, newMoves, piece, das, gravity, startCol);
     for (auto move : newMoves) {
         std::map<std::string, float> score{{"total", evaluateMove(move, pieceGen, well)}};
         moves.emplace_back(move, score);
@@ -33,6 +61,11 @@ void Evaluator::generateMoves(Board& startingBoard, Piece piece)
     std::sort(moves.begin(), moves.end(),  
         [](std::pair<Board, std::map<std::string, float>> i, std::pair<Board, std::map<std::string, float>>j) 
             {return i.second["total"] > j.second["total"];});
+}
+
+void Evaluator::setGravity(int newGravity)
+{
+    gravity = newGravity;
 }
 
 float evaluateMove(Board& move, PieceGenerator& pieceGen, int well) {
@@ -67,6 +100,79 @@ float evaluateMove(Board& move, PieceGenerator& pieceGen, int well) {
     return score;
 }
 
+// void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container, int gravity, int startCol, int das) {
+//     auto grid = startingBoard.grid;
+//     for (int orient = 0; orient < piece.data.coordOffsets.size(); ++orient) {
+//         for (int centerCol = 0; centerCol < grid.width; ++centerCol) {
+//             piece.setPosition(grid.height - 1, startCol, orient);
+//             bool collide = false;
+//             int direction = (centerCol < startCol) ? -1 : 1;
+//             int col = startCol;
+//             if (col != centerCol) {
+//                 col += direction;
+//                 piece.translate(0, direction);
+//                 collide = grid.collisionCheck(piece.coords);
+//                 for (int frame = 0; !collide && col != centerCol; ++frame) {
+//                     if (frame % (gravity + 1) == 0) {
+//                         piece.translate(-1, 0);
+//                         collide = grid.collisionCheck(piece.coords);
+//                     }
+//                     if (frame % (das + 1) == 0) {
+//                         piece.translate(0, direction);
+//                         col += direction;
+//                         collide = grid.collisionCheck(piece.coords);
+//                     }
+//                 }
+//             }
+//             else {
+//                 collide = grid.collisionCheck(piece.coords);
+//             }
+//             if (!collide) {
+//                 Board newMove = startingBoard;
+//                 while (!grid.collisionCheck(piece.coords)) {
+//                     piece.translate(-1, 0);
+//                 }
+//                 piece.translate(1, 0);
+//                 newMove.placePiece(piece);
+//                 container.push_back(newMove);
+//             }
+//         }
+//     }
+// }
+
+std::vector<std::vector<bool>> getValidColumns(Grid& grid, Piece piece, int gravity, int startCol, int das)
+{
+    std::vector<std::vector<bool>> validCols(piece.data.coordOffsets.size(), std::vector<bool>(grid.width, false));
+    for (int orient = 0; orient < piece.data.coordOffsets.size(); ++orient) {
+        for (int direction : {-1, 1}) {
+            int col = startCol;
+            piece.setPosition(grid.height - 1, startCol, orient);
+            if (!grid.collisionCheck(piece.coords)) {
+                validCols[orient][startCol] = true;
+                for (int frame = 1; frame < 100000; ++frame) {
+                    if (frame % (gravity + 1) == 0) {
+                        piece.translate(-1, 0);
+                        if (grid.collisionCheck(piece.coords)) {
+                            break;
+                        }
+                    }
+                    if (frame == 1 || (frame - 1) % (das + 1) == 0) {
+                        piece.translate(0, direction);
+                        col += direction;
+                        if (!grid.collisionCheck(piece.coords)) {
+                            validCols[orient][col] = true;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return validCols;
+}
+
 std::map<std::string, float> positionEval(Board& move, int well)
 {
     std::map<std::string, float> scores;
@@ -97,7 +203,7 @@ std::map<std::string, float> burnEval(Board& move, int well)
     scores["depth"] = -1 * depth;
     scores["filled"] = 1 * getNumFilled(move.grid, highestHole);
     scores["surface"] = -0.25 * getRoughness(move.grid, 2);
-    scores["maxheight"] = -0.25 * getMaxHeight(move.grid) * getMaxHeight(move.grid); 
+    scores["maxheight"] = -0.5 * getMaxHeight(move.grid) * getMaxHeight(move.grid); 
     scores["valleys"] = -5 * countValleys(move.grid, well);
         float eval = 0;
     for (auto& evalScore : scores) {
@@ -157,23 +263,6 @@ int getNumFilled(Grid& grid, int row) {
         }
     }
     return filled;
-}
-
-void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container) {
-    for (int orient = 0; orient < piece.data.coordOffsets.size(); ++orient) {
-        for (int centerCol = 0; centerCol < startingBoard.grid.width; ++centerCol) {
-            piece.setPosition(startingBoard.grid.height - 1, centerCol, orient);
-            if (!startingBoard.grid.collisionCheck(piece.coords)) {
-                Board newMove = startingBoard;
-                while (!startingBoard.grid.collisionCheck(piece.coords)) {
-                    piece.translate(-1, 0);
-                }
-                piece.translate(1, 0);
-                newMove.placePiece(piece);
-                container.push_back(newMove);
-            }
-        }
-    }
 }
 
 std::vector<int> getSurface(Grid& grid)

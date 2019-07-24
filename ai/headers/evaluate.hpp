@@ -1,6 +1,7 @@
 #ifndef EVAL
 #define EVAL
 
+#include "move.hpp"
 #include "../../game/headers/grid.hpp"
 #include "../../game/headers/pieces.hpp"
 #include "../../game/headers/board.hpp"
@@ -15,18 +16,20 @@
 struct Evaluator
 {
     int well;
-    Grid evalGrid;
+    int das, gravity, startCol;
     std::vector<std::pair<Board, std::map<std::string, float>>> moves;
     PieceGenerator pieceGen;
 
-    Evaluator(int height, int width);
+    Evaluator(int height, int width, int das, int gravity, int startCol);
     void generateMoves(Board& startingBoard, Piece piece);
+    void setGravity(int newGravity);
 };
 
 float evaluateMove(Board& move, PieceGenerator& pieceGen, int well);
 std::map<std::string, float> burnEval(Board& move, int well);
 std::map<std::string, float> positionEval(Board& move, int well);
-void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container);
+// void getMoves(Board& startingBoard, Piece piece, std::vector<Board>& container, int gravity, int startCol, int das);
+std::vector<std::vector<bool>> getValidColumns(Grid& grid, Piece piece, int orient);
 
 int findWell(Grid& grid, int oldWell);
 std::vector<int> getLowerHeights(Grid& grid);

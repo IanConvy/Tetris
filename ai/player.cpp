@@ -2,27 +2,72 @@
 
 #include "../game/headers/pieces.hpp"
 #include "../game/headers/grid.hpp"
+#include "../game/headers/board.hpp"
 #include "headers/tools.hpp"
 
 #include <vector>
 #include <memory>
 
-Player::Player() : 
-grid{20, 10},
+Player::Player(int startLevel) : 
+startLevel{startLevel},
+level{startLevel},
+firstThreshold{0},
+score{0},
+gravity{0},
+lineScore{0, 0, 0, 0},
+evaluator{20, 10, 5, 0, 5},
 pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
 currPiece{nullptr},
 nextPiece{nullptr},
-score{0},
-lineCount{0},
-lineTypeCount{0, 0, 0, 0}
+board{20, 10},
+eval{}
 {
-    Piece firstPiece = Piece(allPieces.find("tPiece")->second);
-    firstPiece.setPosition(0, 4, 2);
-    for (auto rowCol : firstPiece.coords) {
-        grid.fill(rowCol[0], rowCol[1], firstPiece.data.index);
-    }
+    if (startLevel <= 9) firstThreshold = 10*(startLevel + 1);
+    else if (startLevel > 9 && startLevel <= 15) firstThreshold = 100;
+    else firstThreshold = 10*(startLevel - 5);
+    reset();
+}
+
+void Player::reset()
+{
     currPiece = pieceGen.getRandomPiece();
     nextPiece = pieceGen.getRandomPiece();
+    score = 0;
+    level = startLevel;
+    board.reset();
+    setConstants();
+}
+
+void Player::updateScore()
+{
+    score = 
+        lineScore[0] * board.lineTypeCount[0] +
+        lineScore[1] * board.lineTypeCount[1] +
+        lineScore[2] * board.lineTypeCount[2] +
+        lineScore[3] * board.lineTypeCount[3];
+}
+
+void Player::updateLevel()
+{
+    if (board.lineCount >= firstThreshold) {
+        level = startLevel + (board.lineCount - firstThreshold)/10 + 1;
+        setConstants();
+    }
+}
+
+void Player::setConstants()
+{
+    lineScore = {
+        40*(level + 1),
+        100*(level + 1),
+        300*(level + 1),
+        1200*(level + 1)};
+    if (level <= 8) gravity = 47 - 5*level;
+    else if (level == 9) gravity = 5;
+    else if (level > 9 && level <= 18) gravity = 4 - (level-10)/3;
+    else if (level > 18 && level <= 28) gravity = 1;
+    else if (level > 28) gravity = 0;
+    evaluator.setGravity(gravity);
 }
 
 void Player::newPiece()
@@ -31,132 +76,18 @@ void Player::newPiece()
     nextPiece = pieceGen.getRandomPiece();
 }
 
-void Player::placePiece(int centerCol, int orient)
-{
-    currPiece->setPosition(grid.height - 1, centerCol, orient);
-    while (!grid.collisionCheck(currPiece->coords)) {
-        currPiece->translate(-1, 0);
-    }
-    currPiece->translate(1, 0);
-    for (auto colRow : currPiece->coords) {
-        if (grid.inBounds(colRow[0], colRow[1])) {
-            grid.fill(colRow[0], colRow[1], currPiece->data.index);
-        }
-    }
-}
-
-std::vector<int> Player::getBestMove()
-{
-    std::vector<std::vector<int>> moves;
-    auto origGrid = grid.grid;
-    auto origLineCount = lineCount;
-    auto origLineCountType = lineTypeCount;
-    float bestEval = -10000;
-    int bestIndex = 0;
-    int i = 0;
-    for (int orient = 0; orient < currPiece->data.coordOffsets.size(); ++orient) {
-        for (int col = 0; col < grid.width; ++col) {
-            currPiece->setPosition(grid.height - 1, col, orient);
-            if (!grid.collisionCheck(currPiece->coords)) {
-                placePiece(col, orient);
-                auto filledRows = grid.getFilledRows();
-                lineCount += filledRows.size();
-                if (!filledRows.empty()) {
-                    grid.clearRows(filledRows);
-                    ++lineTypeCount[filledRows.size() - 1];
-                }
-                moves.push_back({currPiece->centerRow, col, orient});
-                float eval = evaluateGrid(grid.grid, false);
-                if (eval > bestEval) {
-                    bestEval = eval;
-                    bestIndex = i;
-                }
-                grid.grid = origGrid;
-                lineCount = origLineCount;
-                lineTypeCount = origLineCountType;
-                ++i;
-            }
-        }
-    }
-    if (!moves.empty()) {
-        return moves[bestIndex];
-    }
-    else {
-        return std::vector<int>{};
-    }
-}
-
-float Player::evaluateGrid(std::vector<int>& moveGrid, bool print = false)
-{
-    auto lowerHeight = getLowerHeights(grid.height, grid.width, moveGrid);
-    auto upperHeight = getUpperHeights(grid.height, grid.width, moveGrid);
-    float holes = getHoles(lowerHeight, upperHeight, moveGrid);
-    float roughness = getRoughness(upperHeight);
-
-    float heightMin = 20;
-    for (auto itr = lowerHeight.begin(); itr != lowerHeight.end() - 1; ++itr) {
-        if (*itr < heightMin) {
-            heightMin = *itr;
-        }
-    }
-    float heightMax = 0;
-    for (auto itr = upperHeight.begin(); itr != upperHeight.end(); ++itr) {
-        if (*itr > heightMax) {
-            heightMax = *itr;
-        }
-    }
-    float minHeightScore = (heightMin < 5) ? heightMin : 5;
-    float maxHeightScore = (heightMax > 10) ? heightMax - 10 : 0;
-    float nonTetris = lineTypeCount[0] + lineTypeCount[1] + lineTypeCount[2];
-
-    float holeCoeff = -5;
-    float roughCoeff = -0.25;
-    float minHeightCoeff = 1;
-    float maxHeightCoeff = -1;
-    float tetrisCoeff = 10;
-    float lineCoeff = -1;
-
-    float eval = 
-        holeCoeff*holes + 
-        roughCoeff*roughness + 
-        minHeightCoeff*minHeightScore + 
-        maxHeightCoeff*maxHeightScore +
-        lineCoeff*nonTetris + 
-        tetrisCoeff*lineTypeCount[3];
-
-    if (print) {
-        std::cout << "\nEvaluation: "
-            << "\n   Hole Score: " << holeCoeff*holes
-            << "\n   Roughness Score: " << roughCoeff*roughness
-            << "\n   MinHeight Score: " << minHeightCoeff*minHeightScore
-            << "\n   MaxHeight Score: " << maxHeightCoeff*maxHeightScore
-            << "\n   Line Score: " << lineCoeff*nonTetris
-            << "\n   Tetris Score: " << tetrisCoeff*lineTypeCount[3]
-            << "\n   Score: " << eval - tetrisCoeff*lineTypeCount[3] - lineCoeff*nonTetris
-            << std::endl; 
-    }
-    return eval;
-}
-
-bool Player::bestMove()
+bool Player::nextMove()
 {
     bool topout = false;
-    auto rowColOrient = getBestMove();
-    if (!rowColOrient.empty()) {
-        currPiece->setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
-        grid.fillSet(currPiece->coords, currPiece->data.index);
-        auto filledRows = grid.getFilledRows();
-        lineCount += filledRows.size();
-        if (!filledRows.empty()) {
-            grid.clearRows(filledRows);
-            ++lineTypeCount[filledRows.size() - 1];
-        }
+    evaluator.generateMoves(board, *currPiece);
+    if (!evaluator.moves.empty()) {
+        board = evaluator.moves[0].first;
         newPiece();
+        updateLevel();
+        setConstants();
+        updateScore();
     }
     else {
-        topout = true;
-    }
-    if (lineCount > 230) {
         topout = true;
     }
     return topout;
