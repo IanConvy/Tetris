@@ -230,7 +230,7 @@ void BoardDrawer::drawLevel()
 void BoardDrawer::drawMiscData()
 {
      if (miscDataSource != nullptr) {
-        float spacing = (200 / miscDataSource->size() < 50) ? 200 / miscDataSource->size() : 50;
+        float spacing = (!miscDataSource->empty() && 200 / miscDataSource->size() < 50) ? 200 / miscDataSource->size() : 50;
         int dataCount = 0;
         for (const auto& labelValue : *miscDataSource) {
             std::stringstream valStream;
