@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-
 #include "headers/inputs.hpp"
 
 #include <vector>
@@ -11,7 +9,12 @@
 #include "GLFW/glfw3.h"
 
 InputHandler::InputHandler(GLFWwindow* window) :
-keyPress{0, 0, 0, 0, 0},
+/*
+* The InputHandler class records mouse and keyboard events in a game-agnostic manner. The 
+* format of the class is simply a set of containers to hold the input data and a set of
+* functions to retrieve the input events from GLFW. The callback functions are static 
+* members passed to GLFW via pointer in order to capture the callback response.
+*/
 mousePos{0, 0},
 keyCallPtr{keyCallBack},
 mousePosCallPtr{mousePosCallBack},
@@ -30,13 +33,21 @@ pressed{
     {"mouseLeft", false},
     {"mouseRight", false}}
 {
+    // These functions simply pass the callback pointers to GLFW
     glfwSetKeyCallback(window, keyCallPtr);
     glfwSetCursorPosCallback(window, mousePosCallPtr);
     glfwSetMouseButtonCallback(window, mouseClickCallPtr);
+
+    // This function allows GLFW to access members of this class instance
     glfwSetWindowUserPointer(window, this);
 }
 
-void InputHandler::keyParser(int key,int action)
+void InputHandler::keyParser(int key, int action)
+/*
+* This function is called by the callback members and uses the reported 
+* action (pressed or released) to flip the boolean in the key map member
+* which reports whether a given keyboard key is being pressed.
+*/
 {
     if (key == GLFW_KEY_A) {
         if (action == GLFW_PRESS) {
@@ -121,6 +132,12 @@ void InputHandler::keyParser(int key,int action)
 }
 
 void InputHandler::mouseClickParser(int button, int action)
+/*
+* This function works the same as keyParser, except it is called for 
+* mouse button presses. Note that the if-else structure is used here 
+* but not in keyParser because a mouse button action is either GLFW_PRESS 
+* or GLFW_RELEASE, whereas a keyboard key also has the GLFW_REPEAT action.
+*/
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_PRESS) {
@@ -141,10 +158,23 @@ void InputHandler::mouseClickParser(int button, int action)
 }
 
 void InputHandler::setMousePos(double xpos, double ypos)
+/*
+* This function simply records the x-y position it 
+* recieves from the mouse movement callback.
+*/
 {
     mousePos[0] = xpos;
     mousePos[1] = ypos;
 }
+
+/*
+* The following three functions are passed to GLFW for it to call whenever a keyboard or
+* mouse event is detected. The function arguments are set by the GLFW API, while the
+* body is custom. GLFW is only able to access our program's variables through a single 
+* pointer that was set in the InputHandler constructor. This pointer is returned by the
+* glfwGetWindowUserPointer function and must be cast back into InputHandler*. After casting,
+* the pointer can be used to access the InputHandler member functions.
+*/
 
 void InputHandler::keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
