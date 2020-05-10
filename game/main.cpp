@@ -58,14 +58,14 @@ int main(int argc, char* argv[])
             drawer.assignScore(game.dynamic["score"]);
 
             /* 
-            * Set the engine time and the rendering time. Engine time
-            * is used to tell the game how fast to process frames, which
-            * determines the maximum speed of play and the overall timing 
-            * resolution. Rendering time sets how rapidy the OpenGL display 
-            * should be refreshed. They are decoupled to allow the game to 
-            * be played at high speed or precision without the CPU overhead
-            * of rapidly writing to the display buffer, which would be wasteful.
-            */
+             * Set the engine time and the rendering time. Engine time
+             * is used to tell the game how fast to process frames, which
+             * determines the maximum speed of play and the overall timing 
+             * resolution. Rendering time sets how rapidy the OpenGL display 
+             * should be refreshed. They are decoupled to allow the game to 
+             * be played at high speed or precision without the CPU overhead
+             * of rapidly writing to the display buffer, which would be wasteful.
+             */
             double engTime = 0;
             double rendTime = 0;
             const double engSecs = 1 / 60.1;
@@ -84,9 +84,9 @@ int main(int argc, char* argv[])
                     rendTime = newTime;
                 }
                 /* 
-                * We have GLFW detect events at an unconstrained speed to 
-                * maximize responsiveness and prevent events from piling up 
-                */
+                 * We have GLFW detect events at an unconstrained speed to 
+                 * maximize responsiveness and prevent events from piling up 
+                 */
                 glfwPollEvents();
             }
         }
@@ -104,10 +104,10 @@ int main(int argc, char* argv[])
             drawer.assignMiscData(game.eval);
 
             /*
-            * The point-and-click mode does not have an internal or "engine"
-            * frame rate, so the only timing to track is the display refresh
-            * rate.
-            */
+             * The point-and-click mode does not have an internal or "engine"
+             * frame rate, so the only timing to track is the display refresh
+             * rate.
+             */
             double rendTime = 0;
             const double rendSecs = 1 / 60.1;
             
