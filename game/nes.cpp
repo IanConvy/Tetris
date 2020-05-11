@@ -56,7 +56,7 @@ void NESTetris::resetGame()
     
     lineTypeCount = {0, 0, 0, 0};
     filledRows.clear();
-    grid.reset();
+    grid.clear();
     currPiece = pieceGen.getRandomPiece();
     nextPiece = pieceGen.getRandomPiece();
     currPiece->setPosition(19, 5, 0);
@@ -250,7 +250,7 @@ void NESTetris::writePiece()
 
 void NESTetris::clearPiece()
 {
-    grid.clearSet(currPiece->coords);
+    grid.fillSet(currPiece->coords, 0);
 }
 
 void NESTetris::updatePiece()

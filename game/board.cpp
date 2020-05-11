@@ -13,7 +13,7 @@ void Board::reset()
 {
     lineCount = 0;
     lineTypeCount = {0, 0, 0, 0};
-    grid.reset();
+    grid.clear();
 }
 
 void Board::placePiece(Piece& piece)

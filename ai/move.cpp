@@ -53,73 +53,76 @@ std::vector<std::vector<int>> getPossible(std::vector<Grid>& collisionMaps)
     return possible;
 } 
 
-std::vector<std::vector<int>> getPositions(std::vector<Grid>& collisionMaps, int das, int gravity, int startCol)
-{
-    std::vector<std::vector<int>> positions;
-    if (collisionMaps[0].get(collisionMaps[0].height - 1, startCol) != 1) {
-        auto possible = getPossible(collisionMaps);
-        positions.reserve(possible.size());
-        auto collideHeights = getCollisionHeights(collisionMaps);
-        auto colAccesses = getColAccess(collideHeights, collisionMaps, das, gravity, startCol);
-        for (auto rowColOrient : possible) {
-            int row = rowColOrient[0];
-            int col = rowColOrient[1];
-            int orient = rowColOrient[2];
-            if (colAccesses[orient][col]) {
-                if (row == collideHeights[orient][col] + 1) {
-                    positions.push_back(rowColOrient);
-                }
-                else if (
-                    (col - 1 >= 0 && colAccesses[orient][col - 1] && row >= collideHeights[orient][col - 1]) ||
-                    (col + 1 < colAccesses[orient].size() && colAccesses[orient][col + 1] && row >= collideHeights[orient][col + 1])
-                    ) {
-                        positions.push_back(rowColOrient);
-                }
-                else {
-                    int cwOrient = (orient + 1 < colAccesses.size()) ? orient + 1 : 0;
-                    int ccwOrient = (orient - 1 >= 0) ? orient - 1 : colAccesses.size() - 1;
-                    if (
-                        (colAccesses[cwOrient][col] && row >= collideHeights[cwOrient][col]) ||
-                        (colAccesses[ccwOrient][col] && row >= collideHeights[ccwOrient][col])
-                        ) {
-                            positions.push_back(rowColOrient);
-                    }
-                }
-            }
-        }
-    }
-    return positions;
-}
+// BROKEN WHEN SWITCHING GRID
+// std::vector<std::vector<int>> getPositions(std::vector<Grid>& collisionMaps, int das, int gravity, int startCol)
+// {
+//     std::vector<std::vector<int>> positions;
+//     if (collisionMaps[0].get(collisionMaps[0].height - 1, startCol) != 1) {
+//         auto possible = getPossible(collisionMaps);
+//         positions.reserve(possible.size());
+//         auto collideHeights = getCollisionHeights(collisionMaps);
+//         auto colAccesses = getColAccess(collideHeights, collisionMaps, das, gravity, startCol);
+//         for (auto rowColOrient : possible) {
+//             int row = rowColOrient[0];
+//             int col = rowColOrient[1];
+//             int orient = rowColOrient[2];
+//             if (colAccesses[orient][col]) {
+//                 if (row == collideHeights[orient][col] + 1) {
+//                     positions.push_back(rowColOrient);
+//                 }
+//                 else if (
+//                     (col - 1 >= 0 && colAccesses[orient][col - 1] && row >= collideHeights[orient][col - 1]) ||
+//                     (col + 1 < colAccesses[orient].size() && colAccesses[orient][col + 1] && row >= collideHeights[orient][col + 1])
+//                     ) {
+//                         positions.push_back(rowColOrient);
+//                 }
+//                 else {
+//                     int cwOrient = (orient + 1 < colAccesses.size()) ? orient + 1 : 0;
+//                     int ccwOrient = (orient - 1 >= 0) ? orient - 1 : colAccesses.size() - 1;
+//                     if (
+//                         (colAccesses[cwOrient][col] && row >= collideHeights[cwOrient][col]) ||
+//                         (colAccesses[ccwOrient][col] && row >= collideHeights[ccwOrient][col])
+//                         ) {
+//                             positions.push_back(rowColOrient);
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return positions;
+// }
 
-void getMoves(Board& startingBoard, std::vector<Board>& container, Piece piece, int das, int gravity, int startCol)
-{
-    auto collisionMaps = getCollisionMaps(startingBoard.grid, piece);
-    auto positions = getPositions(collisionMaps, das, gravity, startCol);
-    for (auto rowColOrient : positions) {
-        Board newMove = startingBoard;
-        piece.setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
-        newMove.placePiece(piece);
-        container.push_back(newMove);
-    }
-}
+// BROKEN WHEN SWITCHING GRID
+// void getMoves(Board& startingBoard, std::vector<Board>& container, Piece piece, int das, int gravity, int startCol)
+// {
+//     auto collisionMaps = getCollisionMaps(startingBoard.grid, piece);
+//     auto positions = getPositions(collisionMaps, das, gravity, startCol);
+//     for (auto rowColOrient : positions) {
+//         Board newMove = startingBoard;
+//         piece.setPosition(rowColOrient[0], rowColOrient[1], rowColOrient[2]);
+//         newMove.placePiece(piece);
+//         container.push_back(newMove);
+//     }
+// }
 
-std::vector<std::vector<int>> getCollisionHeights(std::vector<Grid>& collisionMaps)
-{
-    std::vector<std::vector<int>> allHeights;
-    for (auto map : collisionMaps) {
-        std::vector<int> heights;
-        int width = map.width;
-        for (int col = 0; col < width; ++col) {
-            int currHeight = map.height - 1;
-            for (auto itr = map.grid.end() - width + col; (*itr == 0 || *itr == 2) && currHeight >= 0; itr -= width) {
-                --currHeight;
-            }
-            heights.push_back(currHeight);
-        }
-        allHeights.push_back(heights);
-    }
-    return allHeights;
-}
+// BROKEN WHEN SWITCHING GRID
+// std::vector<std::vector<int>> getCollisionHeights(std::vector<Grid>& collisionMaps)
+// {
+//     std::vector<std::vector<int>> allHeights;
+//     for (auto map : collisionMaps) {
+//         std::vector<int> heights;
+//         int width = map.width;
+//         for (int col = 0; col < width; ++col) {
+//             int currHeight = map.height - 1;
+//             for (auto itr = map.grid.end() - width + col; (*itr == 0 || *itr == 2) && currHeight >= 0; itr -= width) {
+//                 --currHeight;
+//             }
+//             heights.push_back(currHeight);
+//         }
+//         allHeights.push_back(heights);
+//     }
+//     return allHeights;
+// }
 
 std::vector<std::vector<bool>> getColAccess(
     std::vector<std::vector<int>>& collideHeights, std::vector<Grid>& collisionMaps, int das, int gravity, int startCol)

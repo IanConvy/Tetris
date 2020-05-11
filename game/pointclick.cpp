@@ -84,13 +84,13 @@ void PointClick::resetGame()
     flags["aiMode"] = false;
 
     board.reset();
-    displayGrid.reset();
+    displayGrid.clear();
     pieceSeq = pieceGen.getRandomSequence(750);
     updatePiece();
     setConstants();
     record.clear();
     record.push_back(board);
-    eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
     evaluator.setGravity(constants["setGravity"]);
 }
 
@@ -108,7 +108,7 @@ void PointClick::runFrame()
     if (commands["exitAIMode"] && flags["aiMode"]) {
         board = boardBackup;
         displayGrid = boardBackup.grid;
-        eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+        eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
         flags["aiMode"] = false;
     }
     if (flags["aiMode"]) {
@@ -222,7 +222,7 @@ void PointClick::nextMove()
     updateLevel();
     updatePiece();
     displayGrid = board.grid;
-    eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
 }
 
 void PointClick::readMove(int move)
@@ -233,7 +233,7 @@ void PointClick::readMove(int move)
     updatePiece();
     updateScore();
     updateLevel();
-    eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
 }
 
 void PointClick::truncateRecord(int moveInclusive)
@@ -247,7 +247,7 @@ void PointClick::displayEvalMoves(unsigned int move_index)
         auto move = evaluator.moves[move_index];
         displayGrid = move.first.grid;
         board = move.first;
-        eval = (getHoles(board.grid) > 0) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
+        eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
     }
 }
 
