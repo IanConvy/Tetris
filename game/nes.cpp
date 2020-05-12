@@ -21,7 +21,7 @@ nextPiece{nullptr},
 pressedPtr{nullptr},
 filledRows{},
 grid{20, 10},
-pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
+pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
 {
     if (startLevel <= 9) firstThreshold = 10*(startLevel + 1);
     else if (startLevel > 9 && startLevel <= 15) firstThreshold = 100;

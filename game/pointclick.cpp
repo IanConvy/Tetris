@@ -45,7 +45,7 @@ eval{},
 board{20, 10},
 boardBackup{20, 10},
 displayGrid{20, 10},
-pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}},
+pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}},
 evaluator{20, 10, 5, 0, 5}
 {
     pixelHeight = 610;

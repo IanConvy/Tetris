@@ -32,7 +32,7 @@ das{das},
 gravity{gravity},
 startCol{startCol},
 moves{},
-pieceGen{{"lrPiece", "llPiece", "srPiece", "slPiece", "iPiece", "tPiece", "sqPiece"}}
+pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
 {}
 
 // void Evaluator::placePiece(Piece& piece)

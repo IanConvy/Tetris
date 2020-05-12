@@ -26,8 +26,10 @@ struct PieceData
     );
 };
 
-struct Piece
+class Piece
 {
+    public:
+    
     const PieceData& data;
     int centerRow, centerCol, orient;
     std::vector<std::vector<int>> coords;
