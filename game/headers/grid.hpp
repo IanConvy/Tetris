@@ -11,8 +11,8 @@ class Grid
     std::vector<std::vector<int>> grid, bufferGrid;
 
     Grid(const int height, const int width);
-    bool collisionCheck(std::vector<std::vector<int>> coords);
-    void fillSet(std::vector<std::vector<int>>& coords, unsigned int index);
+    bool collisionCheck(const std::vector<std::vector<int>>& coords);
+    void fillSet(const std::vector<std::vector<int>>& coords, unsigned int index);
     void fill(int row, int col, unsigned int index);
     int get(const int row, const int col);
     void clearRows(std::vector<int> filledRows, bool buffer = false);

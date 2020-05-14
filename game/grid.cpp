@@ -39,14 +39,14 @@ void Grid::fill(int row, int col, unsigned int index)
     }
 }
 
-void Grid::fillSet(std::vector<std::vector<int>>& coords, unsigned int index)
+void Grid::fillSet(const std::vector<std::vector<int>>& coords, unsigned int index)
 /*
  * This function calls the fill method for a set of coordinates that all share
  * the same index. This is intended for the kind of bulk grid assingment that
  * occurs during piece placement. 
  */
 {
-    for (auto& rowCol : coords) {
+    for (const auto& rowCol : coords) {
         fill(rowCol[0], rowCol[1], index);
     }  
 }
@@ -92,7 +92,7 @@ void Grid::clearRows(std::vector<int> filledRows, bool buffer)
     }
 }
 
-bool Grid::collisionCheck(const std::vector<std::vector<int>> coords)
+bool Grid::collisionCheck(const std::vector<std::vector<int>>& coords)
 /*
  * This function checks to see if any of the passed coordinates, which 
  * generally represent a piece, overlap with floor, side-walls, or previous 

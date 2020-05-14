@@ -7,15 +7,17 @@
 #include <string>
 #include <vector>
 
-struct Board
+class Board
 {
+    public:
+
     int lineCount;
     std::vector<int> lineTypeCount;
     Grid grid;
 
     Board(int height, int width);
     void reset();
-    void placePiece(Piece& piece);
+    void placePiece(const Piece& piece);
 };
 
 #endif
