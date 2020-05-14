@@ -10,6 +10,7 @@
 #include "pieces.hpp"
 #include "grid.hpp"
 #include "board.hpp"
+#include "inputs.hpp"
 #include "../../ai/headers/evaluate.hpp"
 
 struct PointClick
@@ -22,10 +23,9 @@ struct PointClick
     Board board, boardBackup;
     std::vector<int> lineScore;
     std::unique_ptr<Piece> currPiece, nextPiece;
-    std::map<const std::string, bool>* pressedPtr;
+    InputHandler* inputPtr;
     std::vector<Board> record;
     std::vector<std::string> pieceSeq;
-    std::vector<double>* mousePosPtr;
     std::map<std::string, float> eval;
     Grid displayGrid;
     PieceGenerator pieceGen;
@@ -33,8 +33,6 @@ struct PointClick
 
     PointClick(int startLevel, int x0, int x1, int y0, int y1);
     void setCommands();
-    void assignPressed(std::map<const std::string, bool>& pressedSource);
-    void assignMousePos(std::vector<double>& posSource);
     void runFrame();
     void runGameFrame();
     void runAIFrame();
@@ -51,6 +49,7 @@ struct PointClick
     void truncateRecord(int moveInclusive);
     void displayEvalMoves(unsigned int move_index);
     std::vector<int> getGridPosition(double xpos, double ypos);
+    void assignInput(InputHandler& inputSource);
 };
 
 #endif

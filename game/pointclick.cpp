@@ -39,8 +39,7 @@ pieceSeq{},
 lineScore{0, 0, 0, 0},
 currPiece{nullptr},
 nextPiece{nullptr},
-pressedPtr{nullptr},
-mousePosPtr{nullptr},
+inputPtr{nullptr},
 eval{},
 board{20, 10},
 boardBackup{20, 10},
@@ -293,8 +292,7 @@ void PointClick::setConstants()
 
 void PointClick::setCommands()
 {   
-    auto& pressed = *pressedPtr;
-    auto& xyPos = *mousePosPtr; 
+    std::vector<double> xyPos = inputPtr->getMousePos(); 
     // Mouse Pos:
     auto mouseRowCol = getGridPosition(xyPos[0], xyPos[1]);
     dynamic["mouseRow"] = mouseRowCol[0];
@@ -303,100 +301,53 @@ void PointClick::setCommands()
         commands["onScreen"] = true;
     }
     // Left Mouse Button:
-    if (pressed["mouseLeft"] && !flags["mouseLeftHeld"]) {
+    if (inputPtr->getState("mouseLeft") == "pressed") {
         commands["placePiece"] = true;
-        flags["mouseLeftHeld"] = true;
     }
-    if (!pressed["mouseLeft"]) {
-        flags["mouseLeftHeld"] = false;
-    } 
     // Right Mouse Button:
-    if (pressed["mouseRight"] && !flags["mouseRightHeld"]) {
+    if (inputPtr->getState("mouseRight") == "pressed") {
         commands["doCW"] = true;
-        flags["mouseRightHeld"] = true;
     }
-    if (!pressed["mouseRight"]) {
-        flags["mouseRightHeld"] = false;
-    } 
     // A key:
-    if (pressed["a"] && !flags["aHeld"] && !flags["sHeld"]) {
+    if (inputPtr->getState("a") == "pressed" && inputPtr->getState("s") == "off") {
         commands["doCCW"] = true;
-        flags["aHeld"] = true;
-    }
-    if (!pressed["a"]) {
-        flags["aHeld"] = false;
     }
     // S key:
-    if (pressed["s"] && !flags["sHeld"] && !flags["aHeld"]) {
+    if (inputPtr->getState("s") == "pressed" && inputPtr->getState("a") == "off") {
         commands["doCW"] = true;
-        flags["sHeld"] = true;
-    }
-    if (!pressed["s"]) {
-        flags["sHeld"] = false;
     }
     // Z key:
-    if (pressed["z"] && !flags["zHeld"]) {
+    if (inputPtr->getState("z") == "pressed") {
         commands["recordBack"] = true;
-        flags["zHeld"] = true;
-    }
-    if (!pressed["z"]) {
-        flags["zHeld"] = false;
     }
     // X key:
-    if (pressed["x"] && !flags["xHeld"]) {
+    if (inputPtr->getState("x") == "pressed") {
         commands["recordForward"] = true;
-        flags["xHeld"] = true;
-    }
-    if (!pressed["x"]) {
-        flags["xHeld"] = false;
     }
     // Left key:
-    if (pressed["left"] && !flags["leftHeld"]) {
+    if (inputPtr->getState("left") == "pressed") {
         commands["evalBackward"] = true;
-        flags["leftHeld"] = true;
-    }
-    if (!pressed["left"]) {
-        flags["leftHeld"] = false;
     }
     // Right key:
-    if (pressed["right"] && !flags["rightHeld"]) {
+    if (inputPtr->getState("right") == "pressed") {
         commands["evalForward"] = true;
-        flags["rightHeld"] = true;
-    }
-    if (!pressed["right"]) {
-        flags["rightHeld"] = false;
     }
     // Up key:
-    if (pressed["up"] && !flags["upHeld"]) {
+    if (inputPtr->getState("up") == "pressed") {
         commands["enterAIMode"] = true;
         flags["upHeld"] = true;
     }
-    if (!pressed["up"]) {
-        flags["upHeld"] = false;
-    }
     // Down key:
-    if (pressed["down"] && !flags["downHeld"]) {
+    if (inputPtr->getState("down") == "pressed") {
         commands["exitAIMode"] = true;
-        flags["downHeld"] = true;
-    }
-    if (!pressed["down"]) {
-        flags["downHeld"] = false;
     }
     // Space bar:
-    if (pressed["space"] && !flags["spaceHeld"]) {
+    if (inputPtr->getState("space") == "pressed") {
         commands["placeAIPiece"] = true;
-        flags["spaceHeld"] = true;
-    }
-    if (!pressed["space"]) {
-        flags["spaceHeld"] = false;
     }
     // Escape key:
-    if (pressed["esc"] && !flags["escHeld"]) {
+    if (inputPtr->getState("esc") == "pressed") {
         commands["reset"] = true;
-        flags["escHeld"] = true;
-    }
-    if (!pressed["esc"]) {
-        flags["escHeld"] = false;
     }
 }
 
@@ -413,12 +364,7 @@ std::vector<int> PointClick::getGridPosition(double xpos, double ypos)
     return std::vector<int>{row, col};
 }
 
-void PointClick::assignPressed(std::map<const std::string, bool>& pressedSource)
+void PointClick::assignInput(InputHandler& inputSource)
 {
-    pressedPtr = &pressedSource;
-}
-
-void PointClick::assignMousePos(std::vector<double>& posSource)
-{
-    mousePosPtr = &posSource;
+    inputPtr = &inputSource;
 }

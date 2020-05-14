@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 
             // Create game and assign its display variables to the drawer
             NESTetris game{startLevel};
-            game.assignInputs(inputs.pressed);
+            game.assignInput(inputs);
             drawer.assignGrid(game.grid);
             drawer.assignLevel(game.dynamic["level"]);
             drawer.assignLineCount(game.dynamic["lineCount"]);
@@ -93,8 +93,7 @@ int main(int argc, char* argv[])
         else if (mode == std::string("pointclick")) {
             // Create game and assign its display variables to the drawer
             PointClick game{18, 390, 710, 805, 159};
-            game.assignPressed(inputs.pressed);
-            game.assignMousePos(inputs.mousePos);
+            game.assignInput(inputs);
             drawer.assignGrid(game.displayGrid);
             drawer.assignLevel(game.dynamic["level"]);
             drawer.assignLineCount(game.board.lineCount);

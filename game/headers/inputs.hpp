@@ -12,15 +12,18 @@ class InputHandler
 {
     public:
 
-    std::vector<double> mousePos;
-    std::map<const std::string, bool> pressed;
-
     InputHandler(GLFWwindow* window);
+    std::string getState(std::string keyName);
+    std::vector<double> getMousePos();
     static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mousePosCallBack(GLFWwindow* window, double xpos, double ypos);
     static void mouseClickCallBack(GLFWwindow* window, int button, int action, int mods);
 
     private:
+
+    std::vector<double> mousePos;
+    std::map<const int, bool> prevQueried;
+    std::map<const int, int> actionMap;
 
     void (*keyCallPtr)(GLFWwindow* window, int key, int scancode, int action, int mods);
     void (*mousePosCallPtr)(GLFWwindow* window, double xpos, double ypos);
@@ -30,6 +33,8 @@ class InputHandler
     void mouseClickParser(int button, int action);
     void setMousePos(double xpos, double ypos);
     
-};
+}; 
+
+extern const std::map<const std::string, const int> keyToInt; 
 
 #endif

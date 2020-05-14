@@ -8,6 +8,7 @@
 
 #include "pieces.hpp"
 #include "grid.hpp"
+#include "inputs.hpp"
 
 struct NESTetris
 {
@@ -18,13 +19,12 @@ struct NESTetris
     std::vector<int> filledRows;
     std::vector<int> lineScore, lineTypeCount;
     std::unique_ptr<Piece> currPiece, nextPiece;
-    std::map<const std::string, bool>* pressedPtr;
+    InputHandler* inputPtr;
     Grid grid;
     PieceGenerator pieceGen;
 
     NESTetris(int startLevel);
     void setCommands();
-    void assignInputs(std::map<const std::string, bool>& pressedSource);
     void runFrame();
     void runActiveFrame();
     void runFrozenFrame();
@@ -36,6 +36,7 @@ struct NESTetris
     void setEntryDelay();
     void checkLevel();
     void resetGame();
+    void assignInput(InputHandler& inputSource);
 };
 
 void resetBool(std::map<const std::string, bool>& flags);

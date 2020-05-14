@@ -8,6 +8,20 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
+const std::map<const std::string, const int> keyToInt{
+    {"a", GLFW_KEY_A},
+    {"s", GLFW_KEY_S},
+    {"z", GLFW_KEY_Z},
+    {"x", GLFW_KEY_X},
+    {"left", GLFW_KEY_LEFT},
+    {"right", GLFW_KEY_RIGHT},
+    {"down", GLFW_KEY_DOWN},
+    {"up", GLFW_KEY_UP},
+    {"esc", GLFW_KEY_ESCAPE},
+    {"space", GLFW_KEY_SPACE},
+    {"mouseLeft", GLFW_MOUSE_BUTTON_LEFT},
+    {"mouseRight", GLFW_MOUSE_BUTTON_RIGHT}}; 
+
 InputHandler::InputHandler(GLFWwindow* window) :
 /*
  * The InputHandler class records mouse and keyboard events in a game-agnostic manner. The 
@@ -19,19 +33,32 @@ mousePos{0, 0},
 keyCallPtr{keyCallBack},
 mousePosCallPtr{mousePosCallBack},
 mouseClickCallPtr{mouseClickCallBack},
-pressed{
-    {"a", false},
-    {"s", false},
-    {"z", false},
-    {"x", false},
-    {"lef", false},
-    {"right", false},
-    {"down", false},
-    {"up", false},
-    {"esc", false},
-    {"space", false},
-    {"mouseLeft", false},
-    {"mouseRight", false}}
+prevQueried{ // Records whether the state of a button has previously been queried while pressed
+    {GLFW_KEY_A, false},
+    {GLFW_KEY_S, false},
+    {GLFW_KEY_Z, false},
+    {GLFW_KEY_X, false},
+    {GLFW_KEY_LEFT, false},
+    {GLFW_KEY_RIGHT, false},
+    {GLFW_KEY_DOWN, false},
+    {GLFW_KEY_UP, false},
+    {GLFW_KEY_ESCAPE, false},
+    {GLFW_KEY_SPACE, false},
+    {GLFW_MOUSE_BUTTON_LEFT, false},
+    {GLFW_MOUSE_BUTTON_RIGHT, false}},
+actionMap{ // Records the current state of the key as reported by the hardware
+    {GLFW_KEY_A, 0},
+    {GLFW_KEY_S, 0},
+    {GLFW_KEY_Z, 0},
+    {GLFW_KEY_X, 0},
+    {GLFW_KEY_LEFT, 0},
+    {GLFW_KEY_RIGHT, 0},
+    {GLFW_KEY_DOWN,0},
+    {GLFW_KEY_UP, 0},
+    {GLFW_KEY_ESCAPE, 0},
+    {GLFW_KEY_SPACE, 0},
+    {GLFW_MOUSE_BUTTON_LEFT, 0},
+    {GLFW_MOUSE_BUTTON_RIGHT, 0}}
 {
     // These functions simply pass the callback pointers to GLFW
     glfwSetKeyCallback(window, keyCallPtr);
@@ -42,118 +69,63 @@ pressed{
     glfwSetWindowUserPointer(window, this);
 }
 
-void InputHandler::keyParser(int key, int action)
+std::string InputHandler::getState(std::string keyName) 
 /*
- * This function is called by the callback members and uses the reported 
- * action (pressed or released) to flip the boolean in the key map member
- * which reports whether a given keyboard key is being pressed.
- */
+ * This function returns the state of the desired button. The states
+ * are "off" if the button is not pressed, "pressed" if the button has
+ * just been pressed, and "held" if the button held down. It is important
+ * to note that the difference between "pressed" and "held" is NOT the same
+ * as the difference between GLFW_PRESS and GLFW_REPEAT as reported by
+ * GLFW, since keyboards have a delay between reporting that a button
+ * has been pressed and reporting that a button is being held down. In 
+ * order to make this feedback instantaneous as required, the InputHandler
+ * records whether it has been queried regarding a particular key while the 
+ * button is being pressed (i.e. while GLFW has registered a press but not 
+ * yet a release). If the button had previously been queried, the function
+ * returns the state "held" rather than "pressed".
+ */ 
 {
-    if (key == GLFW_KEY_A) {
-        if (action == GLFW_PRESS) {
-            pressed["a"] = true;
-        }  
-        if (action == GLFW_RELEASE) {
-            pressed["a"] = false;
+    auto keyIntItr = keyToInt.find(keyName); 
+    if (keyIntItr != keyToInt.end()) { // Only proceed if key name is valid
+        int key = keyIntItr->second;
+        if (actionMap[key] == GLFW_RELEASE) {
+            prevQueried[key] = false;
+            return "off";
+        }
+        else if (actionMap[key] != GLFW_RELEASE) { // True for GLFW_PRESS and GLFW_REPEAT
+            if (!prevQueried[key]) {
+                prevQueried[key] = true;
+                return "pressed";
+            }
+            else if (prevQueried[key]) {
+                return "held";
+            }
         }
     }
-    if (key == GLFW_KEY_S) {
-        if (action == GLFW_PRESS) {
-            pressed["s"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["s"] = false;
-        }
-    }
-    if (key == GLFW_KEY_Z) {
-        if (action == GLFW_PRESS) {
-            pressed["z"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["z"] = false;
-        }
-    }
-    if (key == GLFW_KEY_X) {
-        if (action == GLFW_PRESS) {
-            pressed["x"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["x"] = false;
-        }
-    }
-    if (key == GLFW_KEY_LEFT) {
-        if (action == GLFW_PRESS) {
-            pressed["left"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["left"] = false;
-        }
-    }
-    if (key == GLFW_KEY_RIGHT) {
-        if (action == GLFW_PRESS) {
-            pressed["right"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["right"] = false;
-        }
-    }
-    if (key == GLFW_KEY_DOWN) {
-        if (action == GLFW_PRESS) {
-            pressed["down"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["down"] = false;
-        }
-    }
-    if (key == GLFW_KEY_UP) {
-        if (action == GLFW_PRESS) {
-            pressed["up"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["up"] = false;
-        }
-    }
-    if (key == GLFW_KEY_ESCAPE) {
-        if (action == GLFW_PRESS) {
-            pressed["esc"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["esc"] = false;
-        }
-    }
-    if (key == GLFW_KEY_SPACE) {
-        if (action == GLFW_PRESS) {
-            pressed["space"] = true;
-        }
-        if (action == GLFW_RELEASE) {
-            pressed["space"] = false;
-        }
+    else { // If no matching key is found, return empty string to indicate failure
+        return "";
     }
 }
 
-void InputHandler::mouseClickParser(int button, int action)
+std::vector<double> InputHandler::getMousePos()
 /*
- * This function works the same as keyParser, except it is called for 
- * mouse button presses. Note that the if-else structure is used here 
- * but not in keyParser because a mouse button action is either GLFW_PRESS 
- * or GLFW_RELEASE, whereas a keyboard key also has the GLFW_REPEAT action.
+ * This function simply returns a vector containing the current position 
+ * of the mouse.
  */
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        if (action == GLFW_PRESS) {
-            pressed["mouseLeft"] = true;
-        }
-        else {
-            pressed["mouseLeft"] = false;
-        }
-    }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        if (action == GLFW_PRESS) {
-            pressed["mouseRight"] = true;
-        }
-        else {
-            pressed["mouseRight"] = false;
-        }
+    return mousePos;
+}
+
+void InputHandler::keyParser(int key, int action)
+/*
+ * This function is called by the callback members and records the action 
+ * associated with the key reported by GLFW. It can be either GLFW_PRESS,
+ * GLFW_RELEASE, or GLFW_REPEAT, all of which are mapped to integers. Keys
+ * which were not placed in the action map at initialization are not tracked.
+ */
+{
+    if (actionMap.find(key) != actionMap.end()) {
+        actionMap[key] = action;
     }
 }
 
@@ -188,7 +160,7 @@ void InputHandler::mousePosCallBack(GLFWwindow* window, double xpos, double ypos
 
 void InputHandler::mouseClickCallBack(GLFWwindow* window, int button, int action, int mode)
 {
-    static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->mouseClickParser(button, action);
+    static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->keyParser(button, action);
 }
 
 

@@ -8,21 +8,46 @@
 #include <vector>
 #include <memory>
 
+/*
+ * The NESTetris class is used to run a simulated version of NES Tetris,
+ * with the game state being advanced using the "runFrame" method and all
+ * internal variables being stored as members. The implementation details 
+ * are described below. 
+ */
+
 NESTetris::NESTetris(int startLevel) :
-startLevel{startLevel},
-firstThreshold{0},
-commands{},
-dynamic{},
-flags{},
-lineScore{0, 0, 0, 0},
-lineTypeCount{0, 0, 0, 0},
-currPiece{nullptr},
-nextPiece{nullptr},
-pressedPtr{nullptr},
-filledRows{},
-grid{20, 10},
+/*
+ * The constructor initializes many of the class members to null
+ * values, which will later get actual assignements from the resetGame
+ * method called in the body. The firstThreshold member is also assigned
+ * in the constructor body, which marks the number of lines needed for 
+ * the first level transition.  
+ */
+
+startLevel{startLevel}, // Sets the level to start the game at
+firstThreshold{0}, // Sets the number of lines needed to advance from the first level
+commands{}, // Map holding actions to be performed next frame, described more in resetGame
+dynamic{}, // Map holding variables that change during play, described more in resetGame
+flags{}, // Map holding binary state variables, described more in resetGame 
+lineScore{0, 0, 0, 0}, // Holds the number of points to award for each type of line clear
+lineTypeCount{0, 0, 0, 0}, // Holds the number of line clears performed for each type 
+currPiece{nullptr}, // Pointer to the piece currently in play
+nextPiece{nullptr}, // Pointer to the next piece (displayed in window)
+inputPtr{nullptr}, // Pointer to the input map managed by an InputHandler instance
+filledRows{}, // Number of rows filled, used for the cleared lines animation
+grid{20, 10}, // The grid used as the playfield
+// The generator used to create a random piece sequence
 pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
 {
+    /*
+     * Normally in NES Tetris the level advances every 10 line clears, however the 
+     * first transition is treated differently depending on what level you start 
+     * from. If you start from level 10 or lower, the game simply waits for you to 
+     * get ten times that number and then continues advancing the level. However, 
+     * for levels 11 through 15, the level transition is fixed at 100 line clears.
+     * For every starting level greater than 15, an additional 10 line clears is 
+     * added to the 100 line threshold (e.g. level 18 has a threshold of 130). 
+     */
     if (startLevel <= 9) firstThreshold = 10*(startLevel + 1);
     else if (startLevel > 9 && startLevel <= 15) firstThreshold = 100;
     else firstThreshold = 10*(startLevel - 5);
@@ -30,14 +55,25 @@ pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}
 };
 
 void NESTetris::resetGame()
+/*
+ * This function sets all of the state variables to the values 
+ * they should have at the start of a game. Each variable is 
+ * discussed below.
+ */
 {
-    commands["doCCW"] =  false;
-    commands["doCW"] = false;
-    commands["doLeft"] = false;
-    commands["doRight"] =  false;
-    commands["softDrop"] =  false;
-    commands["leftDAS"] = false;
-    commands["rightDAS"] = false;
+    /*
+     * These first set of variables are called "commands", as they
+     * are Boolean variables which tell the game to perform certain
+     * action on a given active frame. Most are activated by user 
+     * inputs, while some are managed internally.  
+     */
+    commands["doCCW"] =  false; // Attempt to rotate piece counterclockwise
+    commands["doCW"] = false; // Attempt to rotate piece clockwise
+    commands["doLeft"] = false; // Attempt to move piece left
+    commands["doRight"] =  false; // Attempt to move piece right
+    commands["softDrop"] =  false; // Attempt to drop piece at faster rate
+    commands["leftDAS"] = false; // Attempt to move piece left with DAS
+    commands["rightDAS"] = false; // Attempt to move piece ri
     commands["clearDAS"] = false;
     commands["reset"] = false;
 
@@ -219,7 +255,6 @@ void NESTetris::runActiveFrame()
         if (grid.collisionCheck(currPiece->coords)) {
             currPiece->translate(1, 0);
             setEntryDelay();
-            flags["newPiece"] = true;
             writePiece();
             filledRows = grid.getFilledRows();
             if (!filledRows.empty()) {
@@ -298,68 +333,45 @@ void NESTetris::setEntryDelay()
 
 void NESTetris::setCommands()
 {   // A key:
-    auto& pressed = *pressedPtr;
-    if (pressed["a"] && !flags["aHeld"] && !flags["sHeld"]) {
+    if (inputPtr->getState("a") == "pressed" && inputPtr->getState("s") == "off") {
         commands["doCCW"] = true;
-        flags["aHeld"] = true;
-    }
-    if (!pressed["a"]) {
-        flags["aHeld"] = false;
     }
     // S key:
-    if (pressed["s"] && !flags["sHeld"] && !flags["aHeld"]) {
+    if (inputPtr->getState("s") == "pressed" && inputPtr->getState("a") == "off") {
         commands["doCW"] = true;
-        flags["sHeld"] = true;
-    }
-    if (!pressed["s"]) {
-        flags["sHeld"] = false;
     }
     // Left key:
-    if (pressed["left"] && flags["leftHeld"]) { // This being first is important to avoid double move.
-            commands["leftDAS"] = true;
-        }
-    if (pressed["left"] && !flags["leftHeld"] && !flags["rightHeld"]) {
-        flags["leftHeld"] = true;
+    if (inputPtr->getState("left") == "pressed" && inputPtr->getState("right") == "off") {
         commands["doLeft"] = true;
         commands["clearDAS"] = true;
-    }    
-    if (!pressed["left"]) {
-        flags["leftHeld"] = false;
     }
+    else if (inputPtr->getState("left") == "held") {
+            commands["leftDAS"] = true;
+        }    
     // Right key:
-    if (pressed["right"] && flags["rightHeld"]) { // This being first is important to avoid double move.
-        commands["rightDAS"] = true;
-    }
-    if (pressed["right"] && !flags["rightHeld"] && !flags["leftHeld"]) {
-        flags["rightHeld"] = true;
+    if (inputPtr->getState("right") == "pressed" && inputPtr->getState("left") == "off") {
         commands["doRight"] = true;
         commands["clearDAS"] = true;
-    }    
-    if (!pressed["right"]) {
-        flags["rightHeld"] = false;
     }
+    else if (inputPtr->getState("right") == "held") {
+        commands["rightDAS"] = true;
+    }        
     // Down key:
-    if (pressed["down"]) {
+    if (inputPtr->getState("down") != "off") {
         commands["softDrop"] = true;
     }
     else {
         commands["softDrop"] = false;
     }
     // Escape key:
-    if (pressed["esc"]) {
-        if (!flags["escHeld"]) {
-            commands["reset"] = true;
-            flags["escHeld"] = true;
-        }
-    }
-    else {
-        flags["escHeld"] = false;
+    if (inputPtr->getState("esc") == "pressed") {
+        commands["reset"] = true;
     }
 }
 
-void NESTetris::assignInputs(std::map<const std::string, bool>& pressedSource)
+void NESTetris::assignInput(InputHandler& inputSource)
 {
-    pressedPtr = &pressedSource;
+    inputPtr = &inputSource;
 }
 
 void resetBool(std::map<const std::string, bool>& bools)
