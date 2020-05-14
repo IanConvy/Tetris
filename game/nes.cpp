@@ -345,7 +345,7 @@ void NESTetris::setCommands()
         commands["doLeft"] = true;
         commands["clearDAS"] = true;
     }
-    else if (inputPtr->getState("left") == "held") {
+    else if (inputPtr->getState("left") == "held" && inputPtr->getState("right") == "off") {
             commands["leftDAS"] = true;
         }    
     // Right key:
@@ -353,7 +353,7 @@ void NESTetris::setCommands()
         commands["doRight"] = true;
         commands["clearDAS"] = true;
     }
-    else if (inputPtr->getState("right") == "held") {
+    else if (inputPtr->getState("right") == "held" && inputPtr->getState("left") == "off") {
         commands["rightDAS"] = true;
     }        
     // Down key:
