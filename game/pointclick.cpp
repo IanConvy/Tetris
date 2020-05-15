@@ -300,53 +300,55 @@ void PointClick::setCommands()
     if (mouseRowCol[0] >= 0 && mouseRowCol[0] < displayGrid.height && mouseRowCol[1] >= 0 && mouseRowCol[1] < displayGrid.width) {
         commands["onScreen"] = true;
     }
+    std::map<const std::string, std::string> keyStates = inputPtr->getStates(
+        {"mouseLeft", "mouseRight", "a", "s", "z", "x", "left", "right", "up", "down", "space", "esc"});
     // Left Mouse Button:
-    if (inputPtr->getState("mouseLeft") == "pressed") {
+    if (keyStates["mouseLeft"] == "pressed") {
         commands["placePiece"] = true;
     }
     // Right Mouse Button:
-    if (inputPtr->getState("mouseRight") == "pressed") {
+    if (keyStates["mouseRight"] == "pressed") {
         commands["doCW"] = true;
     }
     // A key:
-    if (inputPtr->getState("a") == "pressed" && inputPtr->getState("s") == "off") {
+    if (keyStates["a"] == "pressed" && keyStates["s"] == "off") {
         commands["doCCW"] = true;
     }
     // S key:
-    if (inputPtr->getState("s") == "pressed" && inputPtr->getState("a") == "off") {
+    if (keyStates["s"] == "pressed" && keyStates["a"] == "off") {
         commands["doCW"] = true;
     }
     // Z key:
-    if (inputPtr->getState("z") == "pressed") {
+    if (keyStates["z"] == "pressed") {
         commands["recordBack"] = true;
     }
     // X key:
-    if (inputPtr->getState("x") == "pressed") {
+    if (keyStates["x"] == "pressed") {
         commands["recordForward"] = true;
     }
     // Left key:
-    if (inputPtr->getState("left") == "pressed") {
+    if (keyStates["left"] == "pressed") {
         commands["evalBackward"] = true;
     }
     // Right key:
-    if (inputPtr->getState("right") == "pressed") {
+    if (keyStates["right"] == "pressed") {
         commands["evalForward"] = true;
     }
     // Up key:
-    if (inputPtr->getState("up") == "pressed") {
+    if (keyStates["up"] == "pressed") {
         commands["enterAIMode"] = true;
         flags["upHeld"] = true;
     }
     // Down key:
-    if (inputPtr->getState("down") == "pressed") {
+    if (keyStates["down"] == "pressed") {
         commands["exitAIMode"] = true;
     }
     // Space bar:
-    if (inputPtr->getState("space") == "pressed") {
+    if (keyStates["space"] == "pressed") {
         commands["placeAIPiece"] = true;
     }
     // Escape key:
-    if (inputPtr->getState("esc") == "pressed") {
+    if (keyStates["esc"] == "pressed") {
         commands["reset"] = true;
     }
 }

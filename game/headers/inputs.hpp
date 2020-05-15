@@ -13,7 +13,7 @@ class InputHandler
     public:
 
     InputHandler(GLFWwindow* window);
-    std::string getState(std::string keyName);
+    std::map<const std::string, std::string> getStates(std::vector<std::string> keyName);
     std::vector<double> getMousePos();
     static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mousePosCallBack(GLFWwindow* window, double xpos, double ypos);

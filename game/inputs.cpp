@@ -69,11 +69,11 @@ actionMap{ // Records the current state of the key as reported by the hardware
     glfwSetWindowUserPointer(window, this);
 }
 
-std::string InputHandler::getState(std::string keyName) 
+std::map<const std::string, std::string> InputHandler::getStates(std::vector<std::string> keyNames) 
 /*
- * This function returns the state of the desired button. The states
- * are "off" if the button is not pressed, "pressed" if the button has
- * just been pressed, and "held" if the button held down. It is important
+ * This function returns the states of the desired buttons. The state
+ * is "off" if the button is not pressed, "pressed" if the button has
+ * just been pressed, or "held" if the button held down. It is important
  * to note that the difference between "pressed" and "held" is NOT the same
  * as the difference between GLFW_PRESS and GLFW_REPEAT as reported by
  * GLFW, since keyboards have a delay between reporting that a button
@@ -85,26 +85,32 @@ std::string InputHandler::getState(std::string keyName)
  * returns the state "held" rather than "pressed".
  */ 
 {
-    auto keyIntItr = keyToInt.find(keyName); 
-    if (keyIntItr != keyToInt.end()) { // Only proceed if key name is valid
-        int key = keyIntItr->second;
-        if (actionMap[key] == GLFW_RELEASE) {
-            prevQueried[key] = false;
-            return "off";
-        }
-        else if (actionMap[key] != GLFW_RELEASE) { // True for GLFW_PRESS and GLFW_REPEAT
-            if (!prevQueried[key]) {
-                prevQueried[key] = true;
-                return "pressed";
+    std::map<const std::string, std::string> states;
+    for (auto keyName : keyNames) {
+        auto keyIntItr = keyToInt.find(keyName);
+        std::string state; 
+        if (keyIntItr != keyToInt.end()) { // Only proceed if key name is valid
+            int key = keyIntItr->second;
+            if (actionMap[key] == GLFW_RELEASE) {
+                prevQueried[key] = false;
+                state = "off";
             }
-            else if (prevQueried[key]) {
-                return "held";
+            else if (actionMap[key] != GLFW_RELEASE) { // True for GLFW_PRESS and GLFW_REPEAT
+                if (!prevQueried[key]) {
+                    prevQueried[key] = true;
+                    state = "pressed";
+                }
+                else if (prevQueried[key]) {
+                    state = "held";
+                }
             }
         }
+        else { // If no matching key is found, return empty string to indicate failure
+            state =  "";
+        }
+        states[keyName] = state;
     }
-    else { // If no matching key is found, return empty string to indicate failure
-        return "";
-    }
+    return states;
 }
 
 std::vector<double> InputHandler::getMousePos()
