@@ -17,7 +17,7 @@ struct PointClick
 {
     int startLevel;
     int firstThreshold;
-    float pixelHeight, pixelWidth, bottomLeftX, bottomLeftY;
+    double pixelHeight, pixelWidth, bottomLeftX, bottomLeftY;
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     Board board, boardBackup;
@@ -33,6 +33,7 @@ struct PointClick
 
     PointClick(int startLevel, int x0, int x1, int y0, int y1);
     void setCommands();
+    void checkMouse();
     void runFrame();
     void runGameFrame();
     void runAIFrame();

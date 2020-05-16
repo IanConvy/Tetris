@@ -34,7 +34,7 @@ lineTypeCount{0, 0, 0, 0}, // Holds the number of line clears performed for each
 currPiece{nullptr}, // Pointer to the piece currently in play
 nextPiece{nullptr}, // Pointer to the next piece (displayed in window)
 inputPtr{nullptr}, // Pointer to the InputHandler used for player inputs
-filledRows{}, // Number of rows filled, used for the line clear animation
+filledRows{}, // Indices of rows filled, used for the line clear animation
 grid{20, 10}, // The grid used for the playfield
 // The generator used to create a random piece sequence
 pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
@@ -307,7 +307,7 @@ void NESTetris::runActiveFrame()
      * dasFrames to fill completely. 
      */
 
-    // CCW Rotations:
+    // Counterclockwise rotation:
     if (commands["doCCW"]) {
         currPiece->rotate(-1);
         if (grid.collisionCheck(currPiece->coords)) {
@@ -315,7 +315,7 @@ void NESTetris::runActiveFrame()
         }
     }
 
-    // CW Rotations:
+    // Clockwise rotation:
     if (commands["doCW"]) {
         currPiece->rotate(1);
         if (grid.collisionCheck(currPiece->coords)) {
@@ -323,7 +323,7 @@ void NESTetris::runActiveFrame()
         }
     }
 
-    // Left Translations:
+    // Left translation:
     if (commands["doLeft"]) { // Move without DAS
         dynamic["dasFrames"] = 0;
         currPiece->translate(0, -1);
@@ -346,7 +346,7 @@ void NESTetris::runActiveFrame()
         }
     }
     
-    // Right Translations:
+    // Right translation:
     if (commands["doRight"]) { // Move without DAS
         dynamic["dasFrames"] = 0;
         currPiece->translate(0, 1);
@@ -369,7 +369,7 @@ void NESTetris::runActiveFrame()
         }
     }
 
-    // Soft Drops
+    // Soft drop:
     /*
      * A "soft drop" is a player input that causes the piece to fall at 
      * a speed faster than the normal gravity of the level. In NES Tetris
