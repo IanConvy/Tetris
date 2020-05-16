@@ -29,10 +29,13 @@ InputHandler::InputHandler(GLFWwindow* window) :
  * functions to retrieve the input events from GLFW. The callback functions are static 
  * members passed to GLFW via pointer in order to capture the callback response.
  */
+windowHeight{0},
+windowWidth{0},
 mousePos{0, 0},
 keyCallPtr{keyCallBack},
 mousePosCallPtr{mousePosCallBack},
 mouseClickCallPtr{mouseClickCallBack},
+windowResizeCallPtr{windowResizeCallBack},
 prevQueried{ // Records whether the state of a button has previously been queried while pressed
     {GLFW_KEY_A, false},
     {GLFW_KEY_S, false},
@@ -64,9 +67,13 @@ actionMap{ // Records the current state of the key as reported by the hardware
     glfwSetKeyCallback(window, keyCallPtr);
     glfwSetCursorPosCallback(window, mousePosCallPtr);
     glfwSetMouseButtonCallback(window, mouseClickCallPtr);
+    glfwSetFramebufferSizeCallback(window, windowResizeCallPtr);
 
     // This function allows GLFW to access members of this class instance
     glfwSetWindowUserPointer(window, this);
+
+    // This functions stores the height/width of the window in windowWidth and windowHeight
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
 }
 
 std::map<const std::string, std::string> InputHandler::getStates(std::vector<std::string> keyNames) 
@@ -122,6 +129,15 @@ std::vector<double> InputHandler::getMousePos()
     return mousePos;
 }
 
+std::vector<int> InputHandler::getWindowSize()
+/*
+ * This function simply returns a vector containing the current height
+ * and width of the game window.
+ */
+{
+    return {windowHeight, windowWidth};
+}
+
 void InputHandler::keyParser(int key, int action)
 /*
  * This function is called by the callback members and records the action 
@@ -145,13 +161,27 @@ void InputHandler::setMousePos(double xpos, double ypos)
     mousePos[1] = ypos;
 }
 
+void InputHandler::resizeWindow(int newHeight, int newWidth)
+/* 
+ * This function is called when the user changes the size of the game 
+ * window, and tells OpenGL to resize the drawing surface based on the 
+ * new height and width of the GLFW window while also storing those
+ * new values.
+ */
+{
+    windowHeight = newHeight;
+    windowWidth = newWidth;
+    glViewport(0, 0, newWidth, newHeight);
+}
+
 /*
- * The following three functions are passed to GLFW for it to call whenever a keyboard or
- * mouse event is detected. The function arguments are set by the GLFW API, while the
- * body is custom. GLFW is only able to access our program's variables through a single 
- * pointer that was set in the InputHandler constructor. This pointer is returned by the
- * glfwGetWindowUserPointer function and must be cast back into InputHandler*. After casting,
- * the pointer can be used to access the InputHandler member functions.
+ * The following functions are passed to GLFW for it to call whenever a keyboard or
+ * mouse event is detected, or when the window is resized. The function arguments are 
+ * set by the GLFW API, while the body is custom. GLFW is only able to access our program's 
+ * variables through a single pointer that was set in the InputHandler constructor. This 
+ * pointer is returned by the glfwGetWindowUserPointer function and must be cast back into 
+ * InputHandler*. After casting, the pointer can be used to access the InputHandler member 
+ * functions.
  */
 
 void InputHandler::keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -167,6 +197,11 @@ void InputHandler::mousePosCallBack(GLFWwindow* window, double xpos, double ypos
 void InputHandler::mouseClickCallBack(GLFWwindow* window, int button, int action, int mode)
 {
     static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->keyParser(button, action);
+}
+
+void InputHandler::windowResizeCallBack(GLFWwindow* window, int width, int height)
+{
+    static_cast<InputHandler*>(glfwGetWindowUserPointer(window))->resizeWindow(height, width);
 }
 
 

@@ -20,7 +20,7 @@
  * details of all of this are described below. 
  */
 
-PointClick::PointClick(int startLevel, int x0, int x1, int y0, int y1) :
+PointClick::PointClick(int startLevel) :
 /*
  * The constructor initializes many of the class members to null
  * values, which will later get actual assignements from the resetGame
@@ -34,10 +34,12 @@ PointClick::PointClick(int startLevel, int x0, int x1, int y0, int y1) :
 
 startLevel{startLevel}, // Sets the level to start the game at
 firstThreshold{0}, // Sets the number of lines needed to advance from the first level
-pixelHeight(y0 - y1), // Holds the height of the playfield
-pixelWidth(x1 - x0), // Holds the width of the playfield
-bottomLeftX(x0), // Holds the x-coordinate of the bottom left corner of the playfield
-bottomLeftY(y0), // Holds the y-coordinate of the bottom left corner of the playfield
+windowHeight{0}, // Holds the height of the window
+windowWidth{0}, // Holds the width of the window
+playHeight{0}, // Holds the height of the playfield
+playWidth{0}, // Holds the width of the playfield
+bottomLeftX{0}, // Holds the x-coordinate of the bottom left corner of the playfield
+bottomLeftY{0}, // Holds the y-coordinate of the bottom left corner of the playfield
 commands{}, // Map holding actions to be performed next frame, described more in resetGame
 dynamic{}, // Map holding variables that change during play, described more in resetGame
 flags{}, // Map holding binary state variables, described more in resetGame
@@ -167,6 +169,7 @@ void PointClick::runFrame()
  */
 {
     unHighlightPiece();
+    checkWindow();
     checkMouse();
     setCommands();
     if (commands["reset"]) {
@@ -432,6 +435,36 @@ void PointClick::updateLevel()
     }
 }
 
+void PointClick::checkWindow()
+/*
+ * This function queries the InputHandler to determine the current size of the window, 
+ * then checks to see if the window size has been changed. If so, the height, width,
+ * and bottom corner position of the playfield are all recalculated so that the game
+ * can accurately match the pixel position of the mouse to the position on the grid.
+ * The seemingly arbitrary values used in the equaltion are simply a set of absolute
+ * pixel sizes, measured from the top left corner, that correctly describe the 
+ * proportions of the NES Tetris board graphics:
+ *      899.0: Height of the graphics
+ *      1035.0: Width of the graphics
+ *      159.0: Top of the playfield section
+ *      805.0: Bottom of the playfield section
+ *      390.0: Left side of the playfield section
+ *      710.0: Right side of the playfield section   
+ */
+{
+    std::vector<int> pixelHeightWidth = inputPtr->getWindowSize();
+    if (pixelHeightWidth[0] != windowHeight || pixelHeightWidth[1] != windowWidth) { 
+        windowHeight = pixelHeightWidth[0];
+        windowWidth = pixelHeightWidth[1];
+        double heightScale =  windowHeight / 899.0; // Ratio of window size to absolute size                   
+        double widthScale = windowWidth / 1035.0; // Ratio of window size to absolute size 
+        playHeight = heightScale * (805.0 - 159.0);
+        playWidth = widthScale * (710.0 - 390.0);
+        bottomLeftX = 390.0 * widthScale;
+        bottomLeftY = 805.0 * heightScale;
+    }
+}
+
 void PointClick::checkMouse()
 /*
  * This function determines whether the mouse cursor is located in the
@@ -573,8 +606,8 @@ std::vector<int> PointClick::getGridPosition(double xpos, double ypos)
  * the nearest block.  
  */
 {
-    int row = (bottomLeftY >= ypos) ? (bottomLeftY - ypos) / (pixelHeight/displayGrid.height) : -1;
-    int col = (bottomLeftX <= xpos) ? (xpos - bottomLeftX) / (pixelWidth/displayGrid.width) : -1;
+    int row = (bottomLeftY >= ypos) ? (bottomLeftY - ypos) / (playHeight/displayGrid.height) : -1;
+    int col = (bottomLeftX <= xpos) ? (xpos - bottomLeftX) / (playWidth/displayGrid.width) : -1;
     if (row >= displayGrid.height) {
         row = -1;
     }

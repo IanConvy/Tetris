@@ -8,16 +8,6 @@
 #include "headers/nes.hpp"
 #include "headers/pointclick.hpp"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-/* 
- * This function is called when the user attempts to change the size of the game 
- * window, and tells OpenGL to resize the drawing surface based on the new height 
- * and width of the GLFW window.
- */
-{
-    glViewport(0, 0, width, height);
-}
-
 int main(int argc, char* argv[])
 {
     // Initialize GLFW, set the minimum version at 3.2, and use the core OpenGL profile
@@ -29,9 +19,8 @@ int main(int argc, char* argv[])
     { // This scope holds all of the OpenGL and GLFW operations
 
         // Create the game window and assign to it an OpenGL context loaded by GLEW
-        int windowHeight = 899, windowWidth = 1035;
+        int windowHeight = 899, windowWidth = 1035; // Set initial dimensions, but will change if manually resized
         GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Tetris", nullptr, nullptr);
-        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
         glfwMakeContextCurrent(window);
         glewInit();
 
@@ -92,7 +81,8 @@ int main(int argc, char* argv[])
         }
         else if (mode == std::string("pointclick")) {
             // Create game and assign its display variables to the drawer
-            PointClick game{18, 390, 710, 805, 159};
+
+            PointClick game{startLevel};
             game.assignInput(inputs);
             drawer.assignGrid(game.displayGrid);
             drawer.assignLevel(game.dynamic["level"]);

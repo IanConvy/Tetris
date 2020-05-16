@@ -17,7 +17,8 @@ struct PointClick
 {
     int startLevel;
     int firstThreshold;
-    double pixelHeight, pixelWidth, bottomLeftX, bottomLeftY;
+    int windowHeight, windowWidth;
+    double playHeight, playWidth, bottomLeftX, bottomLeftY;
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     Board board, boardBackup;
@@ -31,9 +32,10 @@ struct PointClick
     PieceGenerator pieceGen;
     Evaluator evaluator;
 
-    PointClick(int startLevel, int x0, int x1, int y0, int y1);
+    PointClick(int startLevel);
     void setCommands();
     void checkMouse();
+    void checkWindow();
     void runFrame();
     void runGameFrame();
     void runAIFrame();
