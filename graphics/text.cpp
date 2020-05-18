@@ -9,7 +9,21 @@
 #include <map>
 #include <string>
 
+/*
+ * The TextDrawer class is used to manage the drawing of text by OpenGL. The
+ * font characters are drawn using textures sampled from a bitmap, with each
+ * character occupying a segment of the bitmap image. Given a set of rectangular
+ * coordinates and a string of characters, the class is able to return the 
+ * vertices needed for each charatcer. 
+ */
+
 TextDrawer::TextDrawer() :
+/*
+ * Since the font bitmap consists of a 1D sequence of characters, the position
+ * of each character in the map can be specified using just a pair of integers
+ * denoting the start and end of the segment containing the character. The position
+ * of each character is listed in the charTexCoords map.
+ */
 charTexCoords{
     {'a', {0, 105}},
     {'b', {106, 212}},
@@ -53,24 +67,39 @@ charTexCoords{
 {}
 
 std::vector<std::vector<float>> TextDrawer::getTextVertices(std::string text, float x0, float x1, float y0, float y1)
+/*
+ * This function takes a string of text and a set of coordinates marking the four
+ * corners of a rectangle and determines the amount of space that can be allotted
+ * to each character. The basic approach is to divide the horizontal length by the
+ * number of character to get the width-per-character, then multiply this spacing
+ * by the height/width ratio of the font to get the vertical spacing. The text is 
+ * then iterated through and each character is assinged its position and texture
+ * coordinates. 
+ */
 {
+    // Get horizontal and vertical spacing
     float horiz_spacing = (x1 - x0) / text.length();
-    float vert_spacing = horiz_spacing*(94.0/106.0);
-    float vert_offset = (y1 - y0 - vert_spacing);
+    float vert_spacing = horiz_spacing*(94.0/106.0); // 106/94 is the aspect ratio of the font
+    float vert_offset = (y1 - y0 - vert_spacing); // Text is vertically centered in the rectangle
     float y0char = y0 + 0.5*vert_offset;
     float y1char = y1 - 0.5*vert_offset;
+
+    // Iterate through each character and generate a set of four vertices to use when drawing
     float charCount = 0;
     std::vector<std::vector<float>> textVertices;
     for (auto& c : text) {
+        // The x-coordinates of each character are generated from the horizontal spacing
         float x0Char = x0 + horiz_spacing*charCount;
         float x1Char = x0Char + horiz_spacing;
-        float x0Tex = charTexCoords[c][0] / 4066.0;
+        // Get relative texture coordinate by dividing by total bitmap width
+        float x0Tex = charTexCoords[c][0] / 4066.0; 
         float x1Tex = charTexCoords[c][1] / 4066.0;
+        // Since the text is drawn in a line the y-coordinate is uniform across all characters
         std::vector<float> charVertices{
-            x0Char, y1char, 0,  x0Tex, 0,
-            x1Char, y1char, 0,  x1Tex, 0,
-            x0Char, y0char, 0,  x0Tex, 1,
-            x1Char, y0char, 0,  x1Tex, 1};
+            x0Char, y1char,  x0Tex, 0,
+            x1Char, y1char,  x1Tex, 0,
+            x0Char, y0char,  x0Tex, 1,
+            x1Char, y0char,  x1Tex, 1};
         textVertices.push_back(charVertices);
         ++charCount;
     }

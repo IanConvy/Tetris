@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     // Initialize GLFW, set the minimum version at 3.2, and use the core OpenGL profile
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     { // This scope holds all of the OpenGL and GLFW operations
@@ -51,14 +51,14 @@ int main(int argc, char* argv[])
              * is used to tell the game how fast to process frames, which
              * determines the maximum speed of play and the overall timing 
              * resolution. Rendering time sets how rapidy the OpenGL display 
-             * should be refreshed. They are decoupled to allow the game to 
-             * be played at high speed or precision without the CPU overhead
+             * should be refreshed. The two times are decoupled to allow the game 
+             * to be played at high speed or precision without the CPU overhead
              * of rapidly writing to the display buffer, which would be wasteful.
              */
             double engTime = 0;
             double rendTime = 0;
-            const double engSecs = 1 / 60.1;
-            const double rendSecs = 1 / 60.1;
+            const double engSecs = 1 / 60.1; // Recipricol of FPS
+            const double rendSecs = 1 / 60.1; // Recipricol of FPS
             
             // Run the main game loop, with game frames run and drawn seperately
             while (!glfwWindowShouldClose(window)) {
@@ -80,8 +80,8 @@ int main(int argc, char* argv[])
             }
         }
         else if (mode == std::string("pointclick")) {
-            // Create game and assign its display variables to the drawer
 
+            // Create game and assign its display variables to the drawer
             PointClick game{startLevel};
             game.assignInput(inputs);
             drawer.assignGrid(game.displayGrid);

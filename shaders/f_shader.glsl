@@ -1,11 +1,18 @@
-#version 330 core
+#version 330 core // Set OpenGL version 3.3
 
-out vec4 FragColor;
-in vec2 TexCoord;
-uniform sampler2D ourTexture;
+/*
+ * This shader takes as input the texture coordinates for a vertex
+ * and then maps it to the bound texture to produce the desired 
+ * fragment colors. 
+ */
+
+in vec2 texturePos; // x and y coordinates in the range [0, 1]
+
+out vec4 FragColor; // Color of the fragment extracted from the texture
+
+uniform sampler2D ourTexture; // Texture variable corresponding to the bound texture
+
 void main() {
-    vec4 texColor = texture(ourTexture, TexCoord);
-    if (texColor.a < 0.1)
-        discard;
-    FragColor = texColor;
+    // The built-in texture function does all of the complicated sampling for us
+    FragColor = texture(ourTexture, texturePos);
 };
