@@ -51,13 +51,7 @@ void Grid::fillSet(const std::vector<std::vector<int>>& coords, unsigned int ind
     }  
 }
 
-void Grid::swapGrids()
-// Slated for deletion. 
-{
-    grid.swap(bufferGrid);
-}
-
-void Grid::clearRows(std::vector<int> filledRows, bool buffer)
+void Grid::clearRows(std::vector<int> filledRows)
 /*
  * This function deletes the rows indexed in the filledRows argument
  * and shifts the remaining rows down so that there aren't any gaps. The
@@ -69,10 +63,6 @@ void Grid::clearRows(std::vector<int> filledRows, bool buffer)
  * therefore cleared.  
  */
 {
-    // Slated for removal. 
-    if (buffer) {
-        bufferGrid = grid;
-    }
     std::sort(filledRows.begin(), filledRows.end());
     int numFilled = filledRows.size();
     for (int row = 0; row < height; ++row) {
@@ -85,10 +75,6 @@ void Grid::clearRows(std::vector<int> filledRows, bool buffer)
         if (row >= height - numFilled) { // Clear the topmost rows which don't have anything above them
             std::fill(grid[row].begin(), grid[row].end(), 0);
         }   
-    }
-    // Slated for removal
-    if (buffer) {
-        swapGrids();
     }
 }
 
@@ -168,5 +154,4 @@ void Grid::clear()
  */ 
 {
     grid = std::vector<std::vector<int>>(height, std::vector<int>(width, 0));
-    bufferGrid = std::vector<std::vector<int>>(height, std::vector<int>(width, 0));
 }

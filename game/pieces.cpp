@@ -156,30 +156,50 @@ void Piece::translate(int dRow, int dCol)
 /*
  * The PieceGenerator class is used to get new Tetris pieces. It serves as 
  * the interface between the game and the piece data. The class can
- * retrieve pieces by name or generate random piece sequences based 
+ * retrieve pieces by name or generate "random" piece sequences based 
  * on a piece list passed to the constructor. The pieces are all managed 
  * using unique pointers. 
  */
 
 PieceGenerator::PieceGenerator(std::vector<std::string> pieceList) :
-uDistr(0, pieceList.size() > 0 ? pieceList.size() - 1 : 0),
-pieceList{pieceList}
+pieceList{pieceList}, // Vector of piece names with some size N
+uDistrNp1(0, (pieceList.size() > 0) ? pieceList.size() : 0), // (N + 1)-sided die (0-indexed)
+uDistrN(0, (pieceList.size() > 0) ? pieceList.size() - 1 : 0) // N-sided die (0-indexed) 
 {
     std::random_device rDev; // System-defined true random-number generator
     rEng.seed(rDev()); // Seed the psuedo-random engine, which will create the random sequences
 }
 
-std::unique_ptr<Piece> PieceGenerator::getRandomPiece()
+std::vector<std::string> PieceGenerator::getRandomSequence(int length)
 /*
- * This function picks a piece name at random from the generator's internal piece
- * list. It then uses this name to retrieve the piece data from the allPieces map,
- * returning a null piece if there is no matching name.
+ * This function generates an "NES Tetris random" sequence of pieces of the specified 
+ * length using pieces drawn from the generator's piece list, returning a vector of names. 
+ * When choosing among N different pieces, NES Tetris does not choose in a unformly random 
+ * manner (i.e. not 1/N for each piece), but instead follows the following procedure:
+ *      1) Roll an N-sided and an (N + 1)-sided die, where each value of the N-sided
+ *         die corresponds to a piece and the (N + 1)-sided die has an extra "re-roll" 
+ *         value on it
+ *      2) Look the value of the (N + 1)-sided die. If the value is "re-roll" or if the 
+ *         piece value is the same as that of the preceding piece, go on to step 3. 
+ *         Otherwise, the value is used to determine the next piece and we're done.
+ *      3) Look at the value of the N-sided die. That value is used to choose the
+ *         the next piece no matter what.
+ * With seven pieces, this procedure results in a 1/28 chance of the same piece occuring 
+ * twice in a row, which is significantly lower than the 1/7 chance you would get with
+ * uniform sampling. 
  */
 {
-    int index = uDistr(rEng); // Use the psuedo-random generator to uniformly sample an index
-    auto pieceItr = allPieces.find(pieceList[index]);
-    std::unique_ptr<Piece> randPiece{pieceItr != allPieces.end() ? new Piece(pieceItr->second) : new Piece()};
-    return randPiece;
+    std::vector<std::string> sequence;
+    sequence.reserve(length);
+    int N = pieceList.size();
+    int seqChoice = -1; // Initial value can't influence first piece selection
+    for (int i = 0; i < length; ++i) {
+        int indexNp1 = uDistrNp1(rEng); // Roll the (N + 1)-sided die (0-indexed)
+        int indexN = uDistrN(rEng); // Roll the N-sided die (0-indexed)
+        seqChoice = (indexNp1 == N || indexNp1 == seqChoice) ? indexN : indexNp1;
+        sequence.push_back(pieceList[seqChoice]);
+    }
+    return sequence;
 }
 
 std::unique_ptr<Piece> PieceGenerator::getPiece(std::string pieceName)
@@ -191,28 +211,11 @@ std::unique_ptr<Piece> PieceGenerator::getPiece(std::string pieceName)
  */
 {
     auto pieceItr = allPieces.find(pieceName);
-    std::unique_ptr<Piece> piece{pieceItr != allPieces.end() ? new Piece(pieceItr->second) : new Piece()};
+    std::unique_ptr<Piece> piece{(pieceItr != allPieces.end()) ? new Piece(pieceItr->second) : new Piece()};
     return piece;
 }
 
-std::vector<std::string> PieceGenerator::getRandomSequence(int length)
-/*
- * This function generates a random piece sequence of the specified length using
- * names drawn from the generator's piece list. It returns only a vector of names,
- * without creating any pieces. 
- */
-{
-    std::vector<std::string> sequence;
-    sequence.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        int index = uDistr(rEng);
-        sequence.push_back(pieceList[index]);
-    }
-    return sequence;
-}
-
 const PieceData nullPiece{}; // Used as a default when a non-existent piece is requested
-
 
 // The master piece map, which holds the pieceData instances indexed by name
 const std::map<const std::string, PieceData> allPieces{

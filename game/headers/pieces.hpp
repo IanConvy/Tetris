@@ -42,16 +42,20 @@ class Piece
     void translate(int dRow, int dCol);
 };
 
-struct PieceGenerator
+class PieceGenerator
 {
-    std::default_random_engine rEng;
-    std::uniform_int_distribution<int> uDistr;
-    std::vector<std::string> pieceList;
+    public:
 
     PieceGenerator(std::vector<std::string> pieceList);
-    std::unique_ptr<Piece> getRandomPiece();
     std::unique_ptr<Piece> getPiece(std::string pieceName);
     std::vector<std::string> getRandomSequence(int length);
+
+    private:
+
+    std::vector<std::string> pieceList;
+    std::default_random_engine rEng;
+    std::uniform_int_distribution<int> uDistrNp1;
+    std::uniform_int_distribution<int> uDistrN;
 };
 
 extern const std::map<const std::string, PieceData> allPieces;

@@ -39,10 +39,10 @@ int main(int argc, char* argv[])
             // Create game and assign its display variables to the drawer
             NESTetris game{startLevel};
             game.assignInput(inputs);
-            drawer.assignGrid(game.grid);
+            drawer.assignGrid(game.displayGrid);
             drawer.assignLevel(game.dynamic["level"]);
-            drawer.assignLineCount(game.dynamic["lineCount"]);
-            drawer.assignlineTypeCount(game.lineTypeCount);
+            drawer.assignLineCount(game.board.lineCount);
+            drawer.assignlineTypeCount(game.board.lineTypeCount);
             drawer.assignNextPiece(game.nextPiece);
             drawer.assignScore(game.dynamic["score"]);
 

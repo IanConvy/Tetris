@@ -28,14 +28,15 @@ startLevel{startLevel}, // Sets the level to start the game at
 firstThreshold{0}, // Sets the number of lines needed to advance from the first level
 commands{}, // Map holding actions to be performed next frame, described more in resetGame
 dynamic{}, // Map holding variables that change during play, described more in resetGame
-flags{}, // Map holding binary state variables, described more in resetGame 
+flags{}, // Map holding binary state variables, described more in resetGame
+pieceSeq{}, // Vector of piece names that holds the game's sequence of pieces
 lineScore{0, 0, 0, 0}, // Holds the number of points to award for each type of line clear
-lineTypeCount{0, 0, 0, 0}, // Holds the number of line clears performed for each type 
 currPiece{nullptr}, // Pointer to the piece currently in play
 nextPiece{nullptr}, // Pointer to the next piece (displayed in window)
 inputPtr{nullptr}, // Pointer to the InputHandler used for player inputs
 filledRows{}, // Indices of rows filled, used for the line clear animation
-grid{20, 10}, // The grid used for the playfield
+board{20, 10}, // Board used during play
+displayGrid{20, 10}, // The grid used by the drawer and displayed to the player
 // The generator used to create a random piece sequence
 pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
 {
@@ -61,6 +62,8 @@ void NESTetris::resetGame()
  * discussed below.
  */
 {
+    setConstants(startLevel); // Set all constants based on startLevel
+
     /*
      * These first set of variables are called "commands", as they
      * are Boolean variables which tell the game to try and perform 
@@ -99,7 +102,7 @@ void NESTetris::resetGame()
      * included among the dynamic variables because a soft drop can temporarily 
      * descreases the value so that the piece falls faster.
      */
-    dynamic["gravity"] = 0;
+    dynamic["gravity"] = constants["setGravity"];
 
     /*
      * dasFrames records how many frames of Delayed Auto Scroll (DAS) have
@@ -141,10 +144,10 @@ void NESTetris::resetGame()
     dynamic["totalFrames"] = 0;
 
     /*
-     * lineCount records the total number of lines that have been cleared, which
-     * determines when the next level is reached. 
+     * The move variable hold the current move of the game. This value increments whenever 
+     * a piece is placed, and can be shifted back and forth as the player reviews old moves. 
      */
-    dynamic["lineCount"] =  0;
+    dynamic["move"] = 0;
 
     // The score variable holds the player's score.  
     dynamic["score"] =  0;
@@ -158,22 +161,12 @@ void NESTetris::resetGame()
     // The flags are binary variables used internally to mark certain conditions.
     flags["frozen"] = false; // Indicates whether the game is paused for an entry delay 
     flags["dropDelay"] = true; // Indicates whether the first piece (with added delay) has fallen
-    
-    /*
-     * The lineTypeCount vector holds the number of different line clears that have
-     * ocurred. The first integer records the number of single line clears, the second
-     * holds the double line clears, the third holds the triple line clears, and the 
-     * fourth holds the number of Tetrises. 
-     */
-    lineTypeCount = {0, 0, 0, 0};
 
     filledRows.clear();
-    grid.clear();
-    currPiece = pieceGen.getRandomPiece();
-    nextPiece = pieceGen.getRandomPiece();
-    currPiece->setPosition(19, 5, 0); // Every piece starts with its center in the same position 
-    setConstants();
-    dynamic["gravity"] = constants["setGravity"];
+    board.reset();
+    displayGrid.clear();
+    pieceSeq = pieceGen.getRandomSequence(1000);
+    updatePiece(); 
 }
 
 void NESTetris::runFrame()
@@ -217,7 +210,7 @@ void NESTetris::runFrozenFrame()
         dynamic["frozenFrames"] = 0;
         flags["frozen"] = false;
         updatePiece();
-        writePiece();
+        displayPiece();
     }
 }
 
@@ -237,39 +230,39 @@ void NESTetris::runClearFrame()
         case 7:
             for (int row : filledRows) {
                 // Start from the middle and clear from each side 
-                grid.fill(row, 5, 0); 
-                grid.fill(row, 5 - 1, 0);
+                displayGrid.fill(row, 5, 0); 
+                displayGrid.fill(row, 5 - 1, 0);
             }
             break;
         case 12:
             for (int row : filledRows) {
-                grid.fill(row, 5 + 1, 0);
-                grid.fill(row, 5 - 2, 0);
+                displayGrid.fill(row, 5 + 1, 0);
+                displayGrid.fill(row, 5 - 2, 0);
             }
             break;
         case 17:
             for (int row : filledRows) {
-                grid.fill(row, 5 + 2, 0);
-                grid.fill(row, 5 - 3, 0);
+                displayGrid.fill(row, 5 + 2, 0);
+                displayGrid.fill(row, 5 - 3, 0);
             }
             break;
         case 22:
             for (int row : filledRows) {
-                grid.fill(row, 5 + 3, 0);
-                grid.fill(row, 5 - 4, 0);
+                displayGrid.fill(row, 5 + 3, 0);
+                displayGrid.fill(row, 5 - 4, 0);
             }
             break;
         case 26:
             for (int row : filledRows) {
-                grid.fill(row, 5 + 4, 0);
-                grid.fill(row, 5 - 5, 0);
+                displayGrid.fill(row, 5 + 4, 0);
+                displayGrid.fill(row, 5 - 5, 0);
             }
             break;
     }
     if (dynamic["clearFrames"] >= (17 + dynamic["entryDelay"])) {
         dynamic["clearFrames"] = 0;
         filledRows.clear();
-        grid.swapGrids();
+        displayGrid = board.grid;
         updatePiece();
     }
 }
@@ -310,7 +303,7 @@ void NESTetris::runActiveFrame()
     // Counterclockwise rotation:
     if (commands["doCCW"]) {
         currPiece->rotate(-1);
-        if (grid.collisionCheck(currPiece->coords)) {
+        if (board.grid.collisionCheck(currPiece->coords)) {
             currPiece->rotate(1);
         }
     }
@@ -318,7 +311,7 @@ void NESTetris::runActiveFrame()
     // Clockwise rotation:
     if (commands["doCW"]) {
         currPiece->rotate(1);
-        if (grid.collisionCheck(currPiece->coords)) {
+        if (board.grid.collisionCheck(currPiece->coords)) {
             currPiece->rotate(-1);
         }
     }
@@ -327,7 +320,7 @@ void NESTetris::runActiveFrame()
     if (commands["doLeft"]) { // Move without DAS
         dynamic["dasFrames"] = 0;
         currPiece->translate(0, -1);
-        if (grid.collisionCheck(currPiece->coords)) {
+        if (board.grid.collisionCheck(currPiece->coords)) {
             currPiece->translate(0, 1);
             dynamic["dasFrames"] = constants["dasLimit"];
         }
@@ -336,7 +329,7 @@ void NESTetris::runActiveFrame()
         if (dynamic["dasFrames"] >= constants["dasLimit"]) {
             dynamic["dasFrames"] = constants["dasFloor"];
             currPiece->translate(0, -1);
-            if (grid.collisionCheck(currPiece->coords)) {
+            if (board.grid.collisionCheck(currPiece->coords)) {
                 currPiece->translate(0, 1);
                 dynamic["dasFrames"] = constants["dasLimit"];
             }
@@ -350,7 +343,7 @@ void NESTetris::runActiveFrame()
     if (commands["doRight"]) { // Move without DAS
         dynamic["dasFrames"] = 0;
         currPiece->translate(0, 1);
-        if (grid.collisionCheck(currPiece->coords)) {
+        if (board.grid.collisionCheck(currPiece->coords)) {
             currPiece->translate(0, -1);
             dynamic["dasFrames"] = constants["dasLimit"];
         }
@@ -359,7 +352,7 @@ void NESTetris::runActiveFrame()
         if (dynamic["dasFrames"] >= constants["dasLimit"]) {
             dynamic["dasFrames"] = constants["dasFloor"];
             currPiece->translate(0, 1);
-            if (grid.collisionCheck(currPiece->coords)) {
+            if (board.grid.collisionCheck(currPiece->coords)) {
                 currPiece->translate(0, -1);
                 dynamic["dasFrames"] = constants["dasLimit"];
             }
@@ -373,11 +366,11 @@ void NESTetris::runActiveFrame()
     /*
      * A "soft drop" is a player input that causes the piece to fall at 
      * a speed faster than the normal gravity of the level. In NES Tetris
-     * the soft drop speed is equal to the speed at level 19, so after
-     * level 18 the soft drop has no effect.
+     * the soft drop speed is equal to half the level gravity rounded up, 
+     * so after level 18 the soft drop has no effect.
      */
     if (commands["softDrop"]) {
-        dynamic["gravity"] = constants["dropGravity"];
+        dynamic["gravity"] = (constants["setGravity"] % 2) ? 0.5*(constants["setGravity"] + 1) : 0.5*constants["setGravity"];
         flags["dropDelay"] = false;
     }
     else {
@@ -397,48 +390,48 @@ void NESTetris::runActiveFrame()
     if (!flags["dropDelay"] && dynamic["dropFrames"] >= dynamic["gravity"]) {
         dynamic["dropFrames"] = 0;
         currPiece->translate(-1, 0);
-        if (grid.collisionCheck(currPiece->coords)) {
+        if (board.grid.collisionCheck(currPiece->coords)) {
+            ++ dynamic["move"];
             currPiece->translate(1, 0);
             setEntryDelay();
-            writePiece();
-            filledRows = grid.getFilledRows();
+            displayPiece();
+            filledRows = displayGrid.getFilledRows();
             if (!filledRows.empty()) {
-                dynamic["lineCount"] += filledRows.size();
-                dynamic["score"] += lineScore[filledRows.size() - 1];
-                ++lineTypeCount[filledRows.size() - 1];
+                board.placePiece(*currPiece);
+                updateScore();
                 checkLevel();
-                grid.clearRows(filledRows, true);
             }    
             else{
+                board.placePiece(*currPiece);
                 flags["frozen"] = true;
             }
         }
         else {
-            writePiece();
+            displayPiece();
         }
     }    
     else {
-        dynamic["dropFrames"] += 1;
-        writePiece();
+        ++ dynamic["dropFrames"];
+        displayPiece();
     }
 }
 
-void NESTetris::writePiece()
+void NESTetris::displayPiece()
 /*
- * This function fills the playfield grid with blocks corresponding to 
+ * This function fills the display grid with blocks corresponding to 
  * the current piece based on its coordinates.
  */
 {
-    grid.fillSet(currPiece->coords, currPiece->data.index);
+    displayGrid.fillSet(currPiece->coords, currPiece->data.index);
 }
 
 void NESTetris::clearPiece()
 /*
- * This function clears the blocks of the playfield grid corresponding to
+ * This function clears the blocks of the display grid corresponding to
  * the coordinates of the current piece. 
  */
 {
-    grid.fillSet(currPiece->coords, 0);
+    displayGrid.fillSet(currPiece->coords, 0);
 }
 
 void NESTetris::updatePiece()
@@ -447,9 +440,22 @@ void NESTetris::updatePiece()
  * piece to become the new nextPiece.
  */
 {
-    currPiece.swap(nextPiece);
-    nextPiece = pieceGen.getRandomPiece();
-    currPiece->setPosition(19, 5, 0);
+    currPiece = pieceGen.getPiece(pieceSeq[dynamic["move"]]);
+    nextPiece = pieceGen.getPiece(pieceSeq[dynamic["move"] + 1]);
+    currPiece->setPosition(19, 5, 0); // Every piece starts with its center in the same position
+}
+
+void NESTetris::updateScore()
+/*
+ * This function updates the score based on the line count of the
+ * Board and the per-line scores dictated by the level. 
+ */
+{
+    dynamic["score"] = 
+        lineScore[0] * board.lineTypeCount[0] +
+        lineScore[1] * board.lineTypeCount[1] +
+        lineScore[2] * board.lineTypeCount[2] +
+        lineScore[3] * board.lineTypeCount[3];
 }
 
 void NESTetris::checkLevel()
@@ -458,26 +464,19 @@ void NESTetris::checkLevel()
  * the line count and level thresholds. 
  */
 {
-    if (dynamic["lineCount"] >= firstThreshold) {
-        dynamic["level"] = startLevel + (dynamic["lineCount"] - firstThreshold)/10 + 1;
-        setConstants();
+    if (board.lineCount >= firstThreshold) {
+        dynamic["level"] = startLevel + (board.lineCount - firstThreshold)/10 + 1;
+        setConstants(dynamic["level"]);
     }
 }
 
-void NESTetris::setConstants()
+void NESTetris::setConstants(int level)
 /* 
  * This function sets values that are constant with respect to either a 
  * given level or the game as a whole. They are described individually in
  * more detail below. 
  */
 {
-    /*
-     * dropGravity determines the gravity value when the player does a soft
-     * drop. In NES Tetris this corresponds to a 1 frame delay unless the level
-     * gravity is 0, in which case dropGravity is also assigned 0 (code further down).
-     */
-    constants["dropGravity"] = 1;
-
     /*
      * dasLimit determines how high dasFrame has to go to cause the piece
      * to move.   
@@ -510,10 +509,10 @@ void NESTetris::setConstants()
      * scaling is linear and consistent across all levels. 
      */
     lineScore = {
-        40*(dynamic["level"] + 1),
-        100*(dynamic["level"] + 1),
-        300*(dynamic["level"] + 1),
-        1200*(dynamic["level"] + 1)};
+        40*(level + 1),
+        100*(level + 1),
+        300*(level + 1),
+        1200*(level + 1)};
     
     /*
      * The following lines are used to product a value for setGravity, which determines
@@ -523,13 +522,12 @@ void NESTetris::setConstants()
      * three levels, then from level 19 to level 28 the gravity remains at 1 frame. For
      * all levels greater than 28 the gravity is 0, which means the piece falls every frame.   
      */
-    if (dynamic["level"] <= 8) constants["setGravity"] = 47 - 5*dynamic["level"];
-    else if (dynamic["level"] == 9) constants["setGravity"] = 5;
-    else if (dynamic["level"] > 9 && dynamic["level"] <= 18) constants["setGravity"] = 4 - (dynamic["level"]-10)/3;
-    else if (dynamic["level"] > 18 && dynamic["level"] <= 28) constants["setGravity"] = 1;
-    else if (dynamic["level"] > 28) {
+    if (level <= 8) constants["setGravity"] = 47 - 5*level;
+    else if (level == 9) constants["setGravity"] = 5;
+    else if (level > 9 && level <= 18) constants["setGravity"] = 4 - (level-10)/3;
+    else if (level > 18 && level <= 28) constants["setGravity"] = 1;
+    else if (level > 28) {
         constants["setGravity"] = 0;
-        constants["dropGravity"] = 0; // If dropGravity stayed at 1, it would be slower than normal gravity
     }
 }
 

@@ -37,7 +37,7 @@ void Board::placePiece(const Piece& piece)
     if (!filledRows.empty()) {
         lineCount += filledRows.size();
         ++lineTypeCount[filledRows.size() - 1];
-        grid.clearRows(filledRows, false);
+        grid.clearRows(filledRows);
     }
 
 }

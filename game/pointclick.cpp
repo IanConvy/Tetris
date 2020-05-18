@@ -148,7 +148,7 @@ void PointClick::resetGame()
     flags["aiMode"] = false; // Indicates whether the player is viewing AI-recommended moves
     flags["inBounds"] = false; // Indicates if the mouse is positioned within the playfield
 
-    pieceSeq = pieceGen.getRandomSequence(750);
+    pieceSeq = pieceGen.getRandomSequence(1000);
     updatePiece();
     setConstants();
     board.reset();

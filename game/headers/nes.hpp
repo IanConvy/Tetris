@@ -4,6 +4,7 @@
 #include "pieces.hpp"
 #include "grid.hpp"
 #include "inputs.hpp"
+#include "board.hpp"
 
 #include <map>
 #include <string>
@@ -17,22 +18,25 @@ struct NESTetris
     std::map<const std::string, bool> commands, flags;
     std::map<const std::string, int> constants, dynamic;
     std::vector<int> filledRows;
-    std::vector<int> lineScore, lineTypeCount;
+    std::vector<int> lineScore;
+    std::vector<std::string> pieceSeq;
     std::unique_ptr<Piece> currPiece, nextPiece;
     InputHandler* inputPtr;
-    Grid grid;
+    Board board;
+    Grid displayGrid;
     PieceGenerator pieceGen;
 
     NESTetris(int startLevel);
+    void setConstants(int level);
     void setCommands();
     void runFrame();
     void runActiveFrame();
     void runFrozenFrame();
     void runClearFrame();
-    void writePiece();
+    void displayPiece();
     void clearPiece();
     void updatePiece();
-    void setConstants();
+    void updateScore();
     void setEntryDelay();
     void checkLevel();
     void resetGame();
