@@ -1,13 +1,4 @@
-#define GLEW_STATIC
 #include "headers/drawer.hpp"
-
-#include <vector>
-#include <string>
-#include <iostream>
-#include <memory>
-#include <map>
-#include <sstream>
-#include <iomanip>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -16,6 +7,14 @@
 #include "headers/text.hpp"
 #include "../game/headers/pieces.hpp"
 #include "../game/headers/grid.hpp"
+
+#include <vector>
+#include <string>
+#include <iostream>
+#include <memory>
+#include <map>
+#include <sstream>
+#include <iomanip>
 
 /*
  * The BoardDrawer class encapsulates all of the calls to OpenGL that are

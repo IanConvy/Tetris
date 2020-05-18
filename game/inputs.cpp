@@ -1,12 +1,11 @@
 #include "headers/inputs.hpp"
 
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+
 #include <vector>
 #include <map>
 #include <string>
-#include <iostream>
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 const std::map<const std::string, const int> keyToInt{
     {"a", GLFW_KEY_A},

@@ -1,14 +1,14 @@
 #ifndef NES
-
 #define NES
-#include <map>
-#include <string>
-#include <vector>
-#include <memory>
 
 #include "pieces.hpp"
 #include "grid.hpp"
 #include "inputs.hpp"
+
+#include <map>
+#include <string>
+#include <vector>
+#include <memory>
 
 struct NESTetris
 {

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <iostream>
 
 /*
  * The PointClick class is used to run a version of Tetris in which there is no gravity,

@@ -1,5 +1,6 @@
 #ifndef PIECES
 #define PIECES
+
 #include <vector>
 #include <string>
 #include <map>

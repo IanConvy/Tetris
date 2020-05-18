@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-
 #include "headers/text.hpp"
 
 #include "GL/glew.h"

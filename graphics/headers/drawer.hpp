@@ -1,4 +1,3 @@
-#define GLEW_STATIC
 #ifndef DRAWER
 #define DRAWER
 
@@ -7,13 +6,29 @@
 #include "stb_image.hpp"
 #include "shader.hpp"
 #include "text.hpp"
+
 #include <vector>
 #include <string>
 #include <memory>
 #include <map>
 
-struct BoardDrawer
+class BoardDrawer
 {
+    public:
+
+    BoardDrawer(std::string location);
+    ~BoardDrawer();
+    void drawFrame();
+    void assignNextPiece(std::unique_ptr<Piece>& piecePtr);
+    void assignGrid(Grid& grid);
+    void assignLineCount(int& lineCount);
+    void assignScore(int& score);
+    void assignLevel(int& level);
+    void assignlineTypeCount(std::vector<int>& typecounts);
+    void assignMiscData(std::map<std::string, float>& data);
+
+    private:
+
     unsigned int sqrArray; 
     unsigned int brdTexture, fontTexture;
     unsigned int sqrBuffer, sqrIndexBuffer;
@@ -33,8 +48,6 @@ struct BoardDrawer
     Shader brdShader;
     TextDrawer textDrawer;
     
-    BoardDrawer(std::string location);
-    ~BoardDrawer();
     void drawBoard();
     void drawSquare(const std::vector<float>& vertices, unsigned int texture);
     void drawPieceBlocks();
@@ -44,14 +57,6 @@ struct BoardDrawer
     void drawScore();
     void drawLevel();
     void drawMiscData();
-    void drawFrame();
-    void assignNextPiece(std::unique_ptr<Piece>& piecePtr);
-    void assignGrid(Grid& grid);
-    void assignLineCount(int& lineCount);
-    void assignScore(int& score);
-    void assignLevel(int& level);
-    void assignlineTypeCount(std::vector<int>& typecounts);
-    void assignMiscData(std::map<std::string, float>& data);
 };
 
 void createTexture(unsigned int& texID, std::string filePath);

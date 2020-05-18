@@ -1,17 +1,16 @@
 #ifndef POINTCLICK
-
 #define POINTCLICK
-#include <map>
-#include <utility>
-#include <string>
-#include <vector>
-#include <memory>
 
 #include "pieces.hpp"
 #include "grid.hpp"
 #include "board.hpp"
 #include "inputs.hpp"
 #include "../../ai/headers/evaluate.hpp"
+
+#include <map>
+#include <string>
+#include <vector>
+#include <memory>
 
 struct PointClick
 {

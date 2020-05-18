@@ -1,4 +1,3 @@
-#define GLEW_STATIC
 #include "headers/shader.hpp"
 
 #include "GL/glew.h"

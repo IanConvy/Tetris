@@ -1,5 +1,5 @@
-#ifndef RECORD
-#define RECORD
+#ifndef BOARD
+#define BOARD
 
 #include "grid.hpp"
 #include "pieces.hpp"
