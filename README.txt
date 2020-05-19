@@ -21,27 +21,27 @@ Steps needed to build Tetris program from scratch on Ubuntu (requires OpenGL 3.3
 		$ make
 
 6. To run the game you need to specify the location of the assets/ directory in the first 
-	argument, and can optionally specify the game type "nes" or "pointclick" in the second 
-	argument (defaults to "nes"), and the starting level in the third argument (defaults to 0)
+   argument, and can optionally specify the game type "nes" or "pointclick" in the second 
+   argument (defaults to "nes"), and the starting level in the third argument (defaults to 0)
 
 		$ ./tetris <assets dir> <game type> <level>
 
 Controls for NES mode:
 
-		 		left arrow : move piece left
-			   right arrow : move piece right
-		 		down arrow : soft drop
-		          		 a : rotate piece counterclockwise
-		          		 s : rotate piece clockwise
-		     		escape : reset game 
+                left arrow : move piece left
+               right arrow : move piece right
+                down arrow : soft drop
+                         a : rotate piece counterclockwise
+                         s : rotate piece clockwise
+                    escape : reset game 
 
 Controls for Point-and-Click mode:
 
-	          mouse cursor : moves piece
+              mouse cursor : moves piece
          left mouse button : place piece
         right mouse button : rotate piece clockwise
-		          		 a : rotate piece counterclockwise
-		          		 s : rotate piece clockwise
-		         		 z : go back one move
-		          		 s : go forward one move
-		     		escape : reset game
+                         a : rotate piece counterclockwise
+                         s : rotate piece clockwise
+                         z : go back one move
+                         x : go forward one move
+                    escape : reset game
