@@ -1,52 +1,55 @@
-objects = objects/main.o objects/drawer.o objects/shader.o objects/text.o objects/stb_image.o \
-	objects/board.o objects/pieces.o objects/grid.o objects/inputs.o objects/nes.o \
-	objects/pointclick.o objects/evaluate.o objects/move.o
+objects = obj/main.o obj/drawer.o obj/shader.o obj/text.o obj/stb_image.o \
+	obj/board.o obj/pieces.o obj/grid.o obj/inputs.o obj/nes.o \
+	obj/pointclick.o obj/evaluate.o obj/move.o obj/glad.o
 
 tetris : $(objects)
-	g++ `pkg-config --cflags glfw3` $(objects) -o tetris -lGL -lGLEW `pkg-config --libs --static glfw3`
+	g++ -Iinclude `pkg-config --cflags glfw3` $(objects) -o tetris -lGL `pkg-config --libs --static glfw3`
 
-objects/main.o : game/main.cpp game/headers/inputs.hpp game/headers/nes.hpp game/headers/pointclick.hpp
-	mkdir -p objects
-	g++ -c game/main.cpp -o objects/main.o
+obj/main.o : src/game/main.cpp include/game/inputs.hpp include/game/nes.hpp include/game/pointclick.hpp
+	mkdir -p obj
+	g++ -Iinclude -c src/game/main.cpp -o obj/main.o
 
-objects/drawer.o : graphics/drawer.cpp graphics/headers/stb_image.hpp graphics/headers/shader.hpp \
-	graphics/headers/text.hpp graphics/headers/drawer.hpp game/headers/pieces.hpp game/headers/grid.hpp
-	g++ -c graphics/drawer.cpp -o objects/drawer.o
+obj/drawer.o : src/graphics/drawer.cpp include/graphics/stb_image.hpp include/graphics/shader.hpp \
+	include/graphics/text.hpp include/graphics/drawer.hpp include/game/pieces.hpp include/game/grid.hpp
+	g++ -Iinclude -c src/graphics/drawer.cpp -o obj/drawer.o
 
-objects/shader.o : graphics/shader.cpp graphics/headers/shader.hpp
-	g++ -c graphics/shader.cpp -o objects/shader.o
+obj/shader.o : src/graphics/shader.cpp include/graphics/shader.hpp
+	g++ -Iinclude -c src/graphics/shader.cpp -o obj/shader.o
 
-objects/text.o : graphics/text.cpp graphics/headers/text.hpp
-	g++ -c graphics/text.cpp -o objects/text.o
+obj/text.o : src/graphics/text.cpp include/graphics/text.hpp
+	g++ -Iinclude -c src/graphics/text.cpp -o obj/text.o
 
-objects/stb_image.o : graphics/stb_image.cpp graphics/headers/stb_image.hpp
-	g++ -c graphics/stb_image.cpp -o objects/stb_image.o
+obj/stb_image.o : src/graphics/stb_image.cpp include/graphics/stb_image.hpp
+	g++ -Iinclude -c src/graphics/stb_image.cpp -o obj/stb_image.o
 
-objects/board.o : game/board.cpp game/headers/board.hpp game/headers/pieces.hpp game/headers/grid.hpp
-	g++ -c game/board.cpp -o objects/board.o
+obj/board.o : src/game/board.cpp include/game/board.hpp include/game/pieces.hpp include/game/grid.hpp
+	g++ -Iinclude -c src/game/board.cpp -o obj/board.o
 
-objects/pieces.o : game/pieces.cpp game/headers/pieces.hpp
-	g++ -c game/pieces.cpp -o objects/pieces.o
+obj/pieces.o : src/game/pieces.cpp include/game/pieces.hpp
+	g++ -Iinclude -c src/game/pieces.cpp -o obj/pieces.o
 
-objects/grid.o : game/grid.cpp game/headers/grid.hpp
-	g++ -c game/grid.cpp -o objects/grid.o
+obj/grid.o : src/game/grid.cpp include/game/grid.hpp
+	g++ -Iinclude -c src/game/grid.cpp -o obj/grid.o
 
-objects/inputs.o : game/inputs.cpp game/headers/inputs.hpp
-	g++ -c game/inputs.cpp -o objects/inputs.o
+obj/inputs.o : src/game/inputs.cpp include/game/inputs.hpp
+	g++ -Iinclude -c src/game/inputs.cpp -o obj/inputs.o
 
-objects/nes.o : game/nes.cpp game/headers/nes.hpp game/headers/pieces.hpp game/headers/grid.hpp
-	g++ -c game/nes.cpp -o objects/nes.o
+obj/nes.o : src/game/nes.cpp include/game/nes.hpp include/game/pieces.hpp include/game/grid.hpp
+	g++ -Iinclude -c src/game/nes.cpp -o obj/nes.o
 
-objects/pointclick.o : game/pointclick.cpp game/headers/pointclick.hpp game/headers/board.hpp \
-	game/headers/pieces.hpp game/headers/grid.hpp ai/headers/evaluate.hpp
-	g++ -c game/pointclick.cpp -o objects/pointclick.o
+obj/pointclick.o : src/game/pointclick.cpp include/game/pointclick.hpp include/game/board.hpp \
+	include/game/pieces.hpp include/game/grid.hpp include/ai/evaluate.hpp
+	g++ -Iinclude -c src/game/pointclick.cpp -o obj/pointclick.o
 
-objects/evaluate.o : ai/evaluate.cpp ai/headers/evaluate.hpp game/headers/board.hpp \
-	game/headers/pieces.hpp game/headers/grid.hpp ai/headers/move.hpp
-	g++ -c ai/evaluate.cpp -o objects/evaluate.o
+obj/evaluate.o : src/ai/evaluate.cpp include/ai/evaluate.hpp include/game/board.hpp \
+	include/game/pieces.hpp include/game/grid.hpp include/ai/move.hpp
+	g++ -Iinclude -c src/ai/evaluate.cpp -o obj/evaluate.o
 
-objects/move.o : ai/move.cpp ai/headers/move.hpp game/headers/grid.hpp game/headers/board.hpp
-	g++ -c ai/move.cpp -o objects/move.o
+obj/move.o : src/ai/move.cpp include/ai/move.hpp include/game/grid.hpp include/game/board.hpp
+	g++ -Iinclude -c src/ai/move.cpp -o obj/move.o
+
+obj/glad.o : src/glad/glad.c include/glad/glad.h
+	g++ -Iinclude -c src/glad/glad.c -o obj/glad.o
 
 
 

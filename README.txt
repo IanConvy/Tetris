@@ -1,58 +1,47 @@
-Steps needed to build Tetris program from scratch on Ubuntu:
+Steps needed to build Tetris program from scratch on Ubuntu (requires OpenGL 3.3 or later):
 
-1. Download GLEW: http://glew.sourceforge.net/
+1. Download GLFW: https://www.glfw.org/download.html
 
-2. Download the following tools needed to build GLEW (taken from GLEW readme):
-
-		$ sudo apt install build-essential libxmu-dev libxi-dev libgl-dev libosmesa-dev
-
-3. Build and install GLEW by running Make in the extracted GLEW directory:
-
-		$ make
-		$ sudo make install
-		$ make clean
-
-4. To make life easier, comment out the following lines in glew.h. This prevents GLEW from trying to 
-   include the missing and deprecated glu.h header file that the IDE/compiler will complain about:
-
-		ifndef GLEW_NO_GLU
-		/* this is where we can safely include GLU */
-		if defined(__APPLE__) && defined(__MACH__)
-			include <OpenGL/glu.h>
-		else
-			include <GL/glu.h>
-		endif
-		endif
-
-5. The GLEW library files may be placed in /usr/lib64, which the compiler and/or executable may not know 
-   to look in by default (when using GLEW as a shared library it failed at runtime). An easy solution is 
-   to just copy the library to /usr/lib (vs settting compiler flags and runtime variables):
-
-		$ sudo cp /usr/lib64/libGLEW.so.2.1 /usr/lib
-
-6. Download GLFW: https://www.glfw.org/download.html
-
-7. Download CMake and xorg-dev for GLFW:
+2. Download CMake and xorg-dev for GLFW:
 
 		$ sudo apt install cmake xorg-dev
 
-8. Prepare a build for GLFW by running CMake in the extracted GLFW directory:
+3. Prepare a build for GLFW by running CMake in the extracted GLFW directory:
 
 		$ cmake .
 
-9. Build and install GLFW by running Make in the GLFW directory
+4. Build and install GLFW by running Make in the GLFW directory
 
 		$ make
 		$ sudo make install
 		$ make clean
 
-10. Run Make in the Tetris directory to compile 
+5. Run Make in the Tetris directory to compile
 
 		$ make
 
-11. To run the game you need to specify the location of the shaders/ and images/ directories in the first argument, 
-    and can optionally specify the game type in the second argument (defaults to "nes"), and the starting level in 
-    the third argument (defaults to 0)"
+6. To run the game you need to specify the location of the assets/ directory in the first 
+	argument, and can optionally specify the game type "nes" or "pointclick" in the second 
+	argument (defaults to "nes"), and the starting level in the third argument (defaults to 0)
 
-		$ ./tetris <parent dir> <game type> <level>
+		$ ./tetris <assets dir> <game type> <level>
 
+Controls for NES mode:
+
+		 		left arrow : move piece left
+			   right arrow : move piece right
+		 		down arrow : soft drop
+		          		 a : rotate piece counterclockwise
+		          		 s : rotate piece clockwise
+		     		escape : reset game 
+
+Controls for Point-and-Click mode:
+
+	          mouse cursor : moves piece
+         left mouse button : place piece
+        right mouse button : rotate piece clockwise
+		          		 a : rotate piece counterclockwise
+		          		 s : rotate piece clockwise
+		         		 z : go back one move
+		          		 s : go forward one move
+		     		escape : reset game
