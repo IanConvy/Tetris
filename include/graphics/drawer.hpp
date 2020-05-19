@@ -25,7 +25,6 @@ class BoardDrawer
     void assignScore(int& score);
     void assignLevel(int& level);
     void assignlineTypeCount(std::vector<int>& typecounts);
-    void assignMiscData(std::map<std::string, float>& data);
 
     private:
 
@@ -44,7 +43,6 @@ class BoardDrawer
     int* scoreSource;
     int* levelSource;
     std::vector<int>* lineTypeCountSource;
-    std::map<std::string, float>* miscDataSource;
     Shader brdShader;
     TextDrawer textDrawer;
     
@@ -56,7 +54,6 @@ class BoardDrawer
     void drawLineTypeCount();
     void drawScore();
     void drawLevel();
-    void drawMiscData();
 };
 
 void createTexture(unsigned int& texID, std::string filePath);

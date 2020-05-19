@@ -43,9 +43,7 @@ prevQueried{ // Records whether the state of a button has previously been querie
     {GLFW_KEY_LEFT, false},
     {GLFW_KEY_RIGHT, false},
     {GLFW_KEY_DOWN, false},
-    {GLFW_KEY_UP, false},
     {GLFW_KEY_ESCAPE, false},
-    {GLFW_KEY_SPACE, false},
     {GLFW_MOUSE_BUTTON_LEFT, false},
     {GLFW_MOUSE_BUTTON_RIGHT, false}},
 actionMap{ // Records the current state of the key as reported by the hardware
@@ -56,9 +54,7 @@ actionMap{ // Records the current state of the key as reported by the hardware
     {GLFW_KEY_LEFT, 0},
     {GLFW_KEY_RIGHT, 0},
     {GLFW_KEY_DOWN,0},
-    {GLFW_KEY_UP, 0},
     {GLFW_KEY_ESCAPE, 0},
-    {GLFW_KEY_SPACE, 0},
     {GLFW_MOUSE_BUTTON_LEFT, 0},
     {GLFW_MOUSE_BUTTON_RIGHT, 0}}
 {

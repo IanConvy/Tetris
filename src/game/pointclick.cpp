@@ -3,7 +3,6 @@
 #include "game/pieces.hpp"
 #include "game/grid.hpp"
 #include "game/board.hpp"
-#include "ai/evaluate.hpp"
 
 #include <map>
 #include <string>
@@ -14,9 +13,8 @@
  * The PointClick class is used to run a version of Tetris in which there is no gravity,
  * with pieces being placed manually by the player at their own pace. The game keeps a 
  * record of the piece sequence and the moves that are made, allowing the player to review
- * past moves and try a different build pattern. This mode also has an associated AI that
- * can analyze the current state of the board and recommend ideal moves. The implementation
- * details of all of this are described below. 
+ * past moves and try a different build pattern.The implementationdetails of all of this 
+ * are described below. 
  */
 
 PointClick::PointClick(int startLevel) :
@@ -48,13 +46,10 @@ lineScore{0, 0, 0, 0}, // Holds the number of points to award for each type of l
 currPiece{nullptr}, // Pointer to the piece currently in play
 nextPiece{nullptr}, // Pointer to the next piece (displayed in window)
 inputPtr{nullptr}, // Pointer to the InputHandler used for player inputs
-eval{}, // Map that holds the evaluation metrics returned by the AI 
 board{20, 10}, // Board used during play
-boardBackup{20, 10}, // Board used to store the playfield before switching to AI mode
 displayGrid{20, 10}, // Grid used by the Drawer to display the playfield
 // The generator used to create a random piece sequence
-pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}},
-evaluator{20, 10, 5, 0, 5} // AI instance used to analyze and offer moves
+pieceGen{{"lPiece", "jPiece", "sPiece", "zPiece", "iPiece", "tPiece", "sqPiece"}}
 {
     /*
      * Normally in NES Tetris the level advances every 10 line clears, however the 
@@ -92,10 +87,6 @@ void PointClick::resetGame()
     commands["placePiece"] = false; // Attempt to place piece
     commands["recordBack"] = false; // Attempt to load previous board position
     commands["recordForward"] = false; // Attempt to load next board position
-    commands["enterAIMode"] = false; // Attempt to enter AI evaluation mode
-    commands["exitAIMode"] = false; // Attempt to exist AI evaluation mode
-    commands["evalForward"] = false; // Attempt to view the next AI recommended move
-    commands["evalBackward"] = false; // Attempt to view the previous AI recommended move
 
     /*
      * The "dynamic" variables represent game values that regularly change
@@ -136,16 +127,8 @@ void PointClick::resetGame()
      * a piece is placed, and can be shifted back and forth as the player reviews old moves. 
      */
     dynamic["move"] = 0;
-
-    /*
-     * evalIndex holds the index of the AI-recommended move currently being viewed by the
-     * player. The moves are ordered based on how favorably the AI has evaluated them, arranged
-     * from best to worst. 
-     */
-    dynamic["evalIndex"] = 0;
     
     // The flags are binary variables used internally to mark certain conditions.
-    flags["aiMode"] = false; // Indicates whether the player is viewing AI-recommended moves
     flags["inBounds"] = false; // Indicates if the mouse is positioned within the playfield
 
     pieceSeq = pieceGen.getRandomSequence(1000);
@@ -155,16 +138,13 @@ void PointClick::resetGame()
     displayGrid.clear();
     record.clear();
     record.push_back(board);
-    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
-    evaluator.setGravity(constants["setGravity"]);
 }
 
 void PointClick::runFrame()
 /*
- * The runFrame function is called to advance the game by one frame. Depending
- * on the state of the internal variables, a particular type of frame is then
- * chosen to be run. The InputHandler is queried every frame and the commands
- * are set, but they may or may not be used depending on the frame that's run. 
+ * The runFrame function is called to advance the game by one frame. Since 
+ * the games does not set any inherent pace for the player, the frame simply
+ * waits for a command and carries out the desired action if it is allowed. 
  */
 {
     unHighlightPiece();
@@ -174,136 +154,55 @@ void PointClick::runFrame()
     if (commands["reset"]) {
         resetGame();
     }
-    
-    if (flags["aiMode"] || commands["enterAIMode"]) { 
-        runAIFrame(); // Run while in AI mode
-    }
     else {
-        runGameFrame(); // Run during normal play
-    }
+        // Browse move record:
+        if (commands["recordBack"] && dynamic["move"] > 0) {
+            readMove(dynamic["move"] - 1);
+        }
+        else if (commands["recordForward"] && dynamic["move"] < record.size() - 1) {
+            readMove(dynamic["move"] + 1);
+        }
+        // Move piece:
+        if (flags["inBounds"]) {
+            currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], currPiece->orient);
+        }
+        // Counterclockwise rotation:
+        if (commands["doCCW"]) {
+            currPiece->rotate(-1);
+        }
+        // Clockwise rotation:
+        if (commands["doCW"]) {
+            currPiece->rotate(1);
+        }
+        // Place piece:
+        if (commands["placePiece"] && flags["inBounds"]) {
+            if (!board.grid.collisionCheck(currPiece->coords)) {
+                dynamic["lastPlacedRow"] = dynamic["mouseRow"];
+                dynamic["lastPlacedCol"] = dynamic["mouseCol"];
+                board.placePiece(*currPiece);
+                nextMove();
+                currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
+            }
+        }
 
+        /*
+        * After processing the commands, the frame displays the current piece so 
+        * that the player can move it to a desired position. The piece is highlighted
+        * with a solid color to visually distinguish it from pieces that have already
+        * been placed, with blue indicating that the piece is in an allowed position 
+        * and red indicating that the position is invalid due to collisions.  
+        */
+        bool moved = dynamic["mouseRow"] != dynamic["lastPlacedRow"] || dynamic["mouseCol"] != dynamic["lastPlacedCol"];
+        if (flags["inBounds"] && moved) {
+            bool collision = board.grid.collisionCheck(currPiece->coords);
+            highlightPiece(collision);
+            dynamic["lastPlacedRow"] = -1;
+            dynamic["lastPlacedCol"] = -1;
+        }
+    }
     // Clear commands:
     for (auto& keyValue : commands) {
         keyValue.second = false;
-    }
-}
-
-void PointClick::runAIFrame()
-/*
- * The runAIFrame function is called when the player is looking at 
- * moves being analyzed and recommended by the AI. The player is not
- * able to manipulate any pieces or review past moves during an AI
- * frame, but they are able to scroll through the different AI move
- * recommendations and use one as their next move. By repeatedly 
- * selecting the best move, the player can watch the AI play a game 
- * of Tetris.
- */
-{
-    /*
-     * The first thing the frame does is check to see if the player had 
-     * activated AI mode on this frame, in which case it tells the AI
-     * to generate moves, creates a backup of the playfield board, and
-     * starts displaying the generated moves.  
-     */
-    if (commands["enterAIMode"]) {
-        flags["aiMode"] = true;
-        dynamic["evalIndex"] = 0;
-        boardBackup = board;
-        evaluator.generateMoves(board, *currPiece);
-        displayEvalMoves(dynamic["evalIndex"]);
-    }
-
-    /*
-     * The frame then processes any allowed input commands. The player is
-     * able to tell the game to display different AI-recommended moves by 
-     * scrolling through the evaluation list, and they are able to choose
-     * one of the moves to play. After a move is played, the AI generates
-     * a new set of moves based on the updates board and the process repeats. 
-     */
-    if (!evaluator.moves.empty()) {
-        // Browse different eval moves:
-        if (commands["evalBackward"]) {
-            dynamic["evalIndex"] = (dynamic["evalIndex"] > 0) ? dynamic["evalIndex"] - 1 : evaluator.moves.size() - 1;
-            displayEvalMoves(dynamic["evalIndex"]);
-        }
-        else if (commands["evalForward"]) {
-            dynamic["evalIndex"] = (dynamic["evalIndex"] < evaluator.moves.size() - 1 ) ? dynamic["evalIndex"] + 1 : 0;
-            displayEvalMoves(dynamic["evalIndex"]);
-        }
-        // Place piece based on AI suggestion:
-        if (commands["placeAIPiece"]) {
-            board = evaluator.moves[dynamic["evalIndex"]].first;
-            boardBackup = board; // The backup is updated to account for the new move
-            nextMove();
-            evaluator.generateMoves(board, *currPiece);
-            dynamic["evalIndex"] = 0;
-            displayEvalMoves(dynamic["evalIndex"]);
-        }
-    }
-
-    /*
-     * Finally, the frame checks to see if the player wants to exit AI mode, in 
-     * which case the backup board is copied to the main board, the display is
-     * redrawn from the backup, and the AI evaluates the position. 
-     */
-    if (commands["exitAIMode"]) {
-        board = boardBackup;
-        displayGrid = boardBackup.grid;
-        eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
-        flags["aiMode"] = false;
-    }
-}
-
-void PointClick::runGameFrame()
-/*
- * The runGameFrame function is called during normal gameplay (i.e. no AI mode).
- * Since the games does not set any inherent pace for the player, the frame simply
- * waits for a command and carries out the desired action if it is allowed.  
- */
-{
-    // Browse move record:
-    if (commands["recordBack"] && dynamic["move"] > 0) {
-        readMove(dynamic["move"] - 1);
-    }
-    else if (commands["recordForward"] && dynamic["move"] < record.size() - 1) {
-        readMove(dynamic["move"] + 1);
-    }
-    // Move piece:
-    if (flags["inBounds"]) {
-        currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], currPiece->orient);
-    }
-     // Counterclockwise rotation:
-    if (commands["doCCW"]) {
-        currPiece->rotate(-1);
-    }
-    // Clockwise rotation:
-    if (commands["doCW"]) {
-        currPiece->rotate(1);
-    }
-    // Place piece:
-    if (commands["placePiece"] && flags["inBounds"]) {
-        if (!board.grid.collisionCheck(currPiece->coords)) {
-            dynamic["lastPlacedRow"] = dynamic["mouseRow"];
-            dynamic["lastPlacedCol"] = dynamic["mouseCol"];
-            board.placePiece(*currPiece);
-            nextMove();
-            currPiece->setPosition(dynamic["mouseRow"], dynamic["mouseCol"], 0);
-        }
-    }
-
-    /*
-     * After processing the commands, the frame displays the current piece so 
-     * that the player can move it to a desired position. The piece is highlighted
-     * with a solid color to visually distinguish it from pieces that have already
-     * been placed, with blue indicating that the piece is in an allowed position 
-     * and red indicating that the position is invalid due to collisions.  
-     */
-    bool moved = dynamic["mouseRow"] != dynamic["lastPlacedRow"] || dynamic["mouseCol"] != dynamic["lastPlacedCol"];
-    if (flags["inBounds"] && moved) {
-        bool collision = board.grid.collisionCheck(currPiece->coords);
-        highlightPiece(collision);
-        dynamic["lastPlacedRow"] = -1;
-        dynamic["lastPlacedCol"] = -1;
     }
 }
 
@@ -355,7 +254,6 @@ void PointClick::nextMove()
     updateScore();
     updateLevel();
     updatePiece();
-    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
 }
 
 void PointClick::readMove(int move)
@@ -372,7 +270,6 @@ void PointClick::readMove(int move)
     updatePiece();
     updateScore();
     updateLevel();
-    eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
 }
 
 void PointClick::truncateRecord(int moveInclusive)
@@ -383,20 +280,6 @@ void PointClick::truncateRecord(int moveInclusive)
  */
 {
     record.erase(record.begin() + moveInclusive, record.end()); 
-}
-
-void PointClick::displayEvalMoves(unsigned int move_index)
-/*
- * This function sets the display grid to display a move from
- * the set of AI-recommended moves based on the passed index.
- */
-{
-    if (move_index < evaluator.moves.size()) {
-        auto move = evaluator.moves[move_index];
-        displayGrid = move.first.grid;
-        board = move.first;
-        eval = (true /*getHoles(board.grid) > 0 // BROKEN WHEN SWITCHING GRID*/ ) ? burnEval(board, evaluator.well) : positionEval(board, evaluator.well);
-    }
 }
 
 void PointClick::updatePiece()
@@ -531,7 +414,7 @@ void PointClick::setCommands()
  */
 {   
     auto keyStates = inputPtr->getStates({"mouseLeft", "mouseRight", "a", "s", 
-        "z", "x", "left", "right", "up", "down", "space", "esc"});
+        "z", "x", "esc"});
 
     // Left mouse button:
     if (keyStates["mouseLeft"] == "pressed") {
@@ -561,31 +444,6 @@ void PointClick::setCommands()
     // X key:
     if (keyStates["x"] == "pressed") {
         commands["recordForward"] = true;
-    }
-
-    // Left key:
-    if (keyStates["left"] == "pressed") {
-        commands["evalBackward"] = true;
-    }
-
-    // Right key:
-    if (keyStates["right"] == "pressed") {
-        commands["evalForward"] = true;
-    }
-
-    // Up key:
-    if (keyStates["up"] == "pressed") {
-        commands["enterAIMode"] = true;
-    }
-
-    // Down key:
-    if (keyStates["down"] == "pressed") {
-        commands["exitAIMode"] = true;
-    }
-
-    // Space bar:
-    if (keyStates["space"] == "pressed") {
-        commands["placeAIPiece"] = true;
     }
 
     // Escape key:

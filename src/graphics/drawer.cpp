@@ -54,7 +54,6 @@ lineCountSource{nullptr}, // Pointer to the line count data
 scoreSource{nullptr}, // Pointer to the score data
 levelSource{nullptr}, // Pointer to the level data
 lineTypeCountSource{nullptr}, // Pointer to line type data
-miscDataSource{nullptr}, // Pointer to the miscellaneous data
 sqrArray{0}, // Holds the ID of the vertex array object
 brdTexture{0}, // Holds the ID of the NES board texture
 fontTexture{0}, // Holds the ID of the font bitmap texture
@@ -132,7 +131,6 @@ void BoardDrawer::drawFrame()
     drawLineTypeCount();
     drawScore();
     drawLevel();
-    drawMiscData();
 }
 
 void BoardDrawer::drawBoard()
@@ -341,35 +339,6 @@ void BoardDrawer::drawLevel()
     }
 }
 
-void BoardDrawer::drawMiscData()
-/*
- * This function draws a set of miscellaneous data from the game. The data
- * is organized in a vertical stack, so the x-coordinates are identical. 
- */
-{
-    if (miscDataSource && !miscDataSource->empty()) {
-        int x0 = 68, x1 = 333;
-        int yStart = 255; // Height from which to start drawing the stack of counters
-        int maxHeight = 315; // Maximum amount of vertical space available
-        int dataCount = 0; // Keeps track of the line clear type during drawing loop
-        // The spacing between the data text is at most 50, but must otherwise be shrunk to fit within maxHeight
-        float spacing = (maxHeight / miscDataSource->size() < 50) ? maxHeight / miscDataSource->size() : 50;
-        for (const auto& labelValue : *miscDataSource) {
-            int y0 = yStart + spacing*dataCount; // Starting height changes along the stack
-            int y1 = yStart + spacing*dataCount + 22; // The text is 22 pixels tall
-            std::stringstream valStream; // Set the precision of the numerical value to be displayed using a stringstream 
-            valStream << std::fixed << std::setprecision(2) << labelValue.second;
-            std::string valueRaw = valStream.str();
-            std::string dataStr = labelValue.first + std::string("   ") + valueRaw;
-            auto textVertices = textDrawer.getTextVertices(dataStr, x0, x1, y0, y1);
-            for (auto& charVertices : textVertices) {
-                drawSquare(charVertices, fontTexture);
-            }
-            ++dataCount;
-        }
-    }
-}
-
 void BoardDrawer::assignGrid(Grid& grid)
 // Assign source of grid data
 {
@@ -404,12 +373,6 @@ void BoardDrawer::assignScore(int& score)
 // Assign source of score data
 {
     scoreSource = &score;
-}
-
-void BoardDrawer::assignMiscData(std::map<std::string, float>& data)
-// Assign source of miscellaneous data
-{
-    miscDataSource = &data;
 }
 
 void BoardDrawer::drawSquare(const std::vector<float>& vertices, unsigned int texture)

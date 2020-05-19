@@ -1,6 +1,6 @@
 objects = obj/main.o obj/drawer.o obj/shader.o obj/text.o obj/stb_image.o \
 	obj/board.o obj/pieces.o obj/grid.o obj/inputs.o obj/nes.o \
-	obj/pointclick.o obj/evaluate.o obj/move.o obj/glad.o
+	obj/pointclick.o obj/glad.o
 
 tetris : $(objects)
 	g++ -Iinclude `pkg-config --cflags glfw3` $(objects) -o tetris -lGL `pkg-config --libs --static glfw3`
@@ -38,15 +38,8 @@ obj/nes.o : src/game/nes.cpp include/game/nes.hpp include/game/pieces.hpp includ
 	g++ -Iinclude -c src/game/nes.cpp -o obj/nes.o
 
 obj/pointclick.o : src/game/pointclick.cpp include/game/pointclick.hpp include/game/board.hpp \
-	include/game/pieces.hpp include/game/grid.hpp include/ai/evaluate.hpp
+	include/game/pieces.hpp include/game/grid.hpp
 	g++ -Iinclude -c src/game/pointclick.cpp -o obj/pointclick.o
-
-obj/evaluate.o : src/ai/evaluate.cpp include/ai/evaluate.hpp include/game/board.hpp \
-	include/game/pieces.hpp include/game/grid.hpp include/ai/move.hpp
-	g++ -Iinclude -c src/ai/evaluate.cpp -o obj/evaluate.o
-
-obj/move.o : src/ai/move.cpp include/ai/move.hpp include/game/grid.hpp include/game/board.hpp
-	g++ -Iinclude -c src/ai/move.cpp -o obj/move.o
 
 obj/glad.o : src/glad/glad.c include/glad/glad.h
 	g++ -Iinclude -c src/glad/glad.c -o obj/glad.o

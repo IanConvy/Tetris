@@ -90,7 +90,6 @@ int main(int argc, char* argv[])
             drawer.assignlineTypeCount(game.board.lineTypeCount);
             drawer.assignNextPiece(game.nextPiece);
             drawer.assignScore(game.dynamic["score"]);
-            drawer.assignMiscData(game.eval);
 
             /*
              * The point-and-click mode does not have an internal or "engine"
