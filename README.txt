@@ -16,15 +16,21 @@ Steps needed to build Tetris program from scratch on Ubuntu (requires OpenGL 3.3
 		$ sudo make install
 		$ make clean
 
-5. Run Make in the Tetris directory to compile
+5. Create a symbolic link in /usr/lib to the OpenGL library (if not already present):
+          
+          $ sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so
+
+6. Run Make in the Tetris directory to compile
 
 		$ make
 
-6. To run the game you need to specify the location of the assets/ directory in the first 
+7. To run the game you need to specify the location of the assets directory in the first 
    argument, and can optionally specify the game type "nes" or "pointclick" in the second 
-   argument (defaults to "nes"), and the starting level in the third argument (defaults to 0)
+   argument (defaults to "nes"), and the starting level in the third argument (defaults 
+   to 0). For example, to run Tetris in NES mode on level 18 while in the source directory:
 
-		$ ./tetris <assets dir> <game type> <level>
+		$ ./tetris assets nes 18
+
 
 Controls for NES mode:
 
@@ -35,7 +41,7 @@ Controls for NES mode:
                          s : rotate piece clockwise
                     escape : reset game 
 
-Controls for Point-and-Click mode:
+Controls for point-and-click mode:
 
               mouse cursor : moves piece
          left mouse button : place piece
