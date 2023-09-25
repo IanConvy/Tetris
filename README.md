@@ -1,4 +1,10 @@
-Steps needed to build Tetris program from scratch on Ubuntu (requires OpenGL 3.3 or later):
+# Tetris Emulation with OpenGL
+
+This application precisely emulates the 1989 release of Tetris for the Nintendo Entertainment System using OpenGL. The codebase was written from scratch in C++, and can be compiled on Linux by following the instructions below. A general description of the emulator and its implementation can be found on [my website](https://ianconvy.github.io/projects/tetris/tetris-emulator/tetris-emulator.html).
+
+## Building from Source
+
+Steps needed to build the emulator from source on Ubuntu (requires OpenGL 3.3 or later):
 
 1. Download GLFW: https://www.glfw.org/download.html
 
@@ -31,6 +37,8 @@ Steps needed to build Tetris program from scratch on Ubuntu (requires OpenGL 3.3
 
 		$ ./tetris assets nes 18
 
+
+## Game Controls
 
 Controls for NES mode:
 
